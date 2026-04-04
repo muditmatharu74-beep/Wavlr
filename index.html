@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Wavlr — AI Music Video Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060e;--surface:#0e0e1c;--card:#14141f;--card2:#1a1a28;
+  --border:#ffffff12;--border2:#ffffff20;
+  --cyan:#00e5ff;--cyan2:#00b4d8;--orange:#ff6b35;--purple:#a855f7;--green:#22d3a0;
+  --text:#f0f0f8;--muted:#7070a0;--muted2:#9090c0;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+.syne{font-family:'Syne',sans-serif}.mono{font-family:'DM Mono',monospace}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
+.bg-glow{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:80vw;height:60vh;background:radial-gradient(ellipse,#00e5ff08 0%,transparent 70%);pointer-events:none;z-index:0}
+.nav{position:fixed;top:0;left:0;right:0;height:56px;background:#06060ecc;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100}
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo span{color:var(--cyan)}
+.nav-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
+.steps{display:flex;align-items:center;gap:0;padding:0 28px}
+.step-item{display:flex;align-items:center;gap:8px;padding:6px 0}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;flex-shrink:0}
+.step-num.done{background:var(--green);color:#000}
+.step-num.active{background:var(--cyan);color:#000}
+.step-num.idle{background:var(--card2);color:var(--muted);border:1px solid var(--border2)}
+.step-label{font-size:12px;color:var(--muted);white-space:nowrap}
+.step-label.active{color:var(--text)}
+.step-sep{width:32px;height:1px;background:var(--border2);margin:0 4px;flex-shrink:0}
+.main{padding-top:56px;min-height:100vh;position:relative;z-index:1}
+.content{max-width:860px;margin:0 auto;padding:48px 28px}
+.page-title{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.1;margin-bottom:10px}
+.page-sub{font-size:15px;color:var(--muted2);margin-bottom:40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.card+.card{margin-top:16px}
+.card-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:56px 32px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:#00e5ff06}
+.upload-icon{width:48px;height:48px;margin:0 auto 16px;background:var(--card2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.upload-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.upload-sub{font-size:13px;color:var(--muted)}
+.upload-btn{display:inline-block;margin-top:20px;padding:9px 20px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
+.upload-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan)}
+.field select option{background:#14141f}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.btn{padding:11px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif}
+.btn-primary{background:var(--cyan);color:#000;font-weight:600}
+.btn-primary:hover{background:#33ecff;transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--card2);color:var(--muted);cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+.btn-ghost:hover{border-color:var(--text);color:var(--text)}
+.btn-row{display:flex;align-items:center;justify-content:space-between;margin-top:32px}
+.analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.metric-chip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.metric-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--cyan)}
+.metric-label{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.mood-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.mood-title{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.mood-tags{display:flex;flex-wrap:wrap;gap:8px}
+.mood-tag{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:'DM Mono',monospace}
+.mood-tag.energy{background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
+.mood-tag.vibe{background:#a855f720;border:1px solid #a855f740;color:#c084fc}
+.mood-tag.theme{background:#00e5ff15;border:1px solid #00e5ff30;color:var(--cyan)}
+.style-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.style-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.style-card:hover,.style-card.selected{border-color:var(--cyan);background:#00e5ff06}
+.style-card.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.style-card-icon{font-size:28px;margin-bottom:10px}
+.style-card-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:5px}
+.style-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.style-card-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.stag{font-size:10px;font-family:'DM Mono',monospace;padding:3px 7px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--muted2)}
+.pro-badge{position:absolute;top:10px;right:10px;font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
+.preview-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:9/16;max-width:260px;margin:0 auto;border:1px solid var(--border2)}
+.preview-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:16px}
+.preview-caption.style-bold .cap-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-shadow:0 2px 20px #000a;line-height:1.2}
+.preview-caption.style-neon .cap-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--cyan);text-shadow:0 0 20px var(--cyan),0 0 40px var(--cyan2);line-height:1.3}
+.preview-caption.style-minimal .cap-text{font-family:'DM Mono',monospace;font-size:15px;font-weight:400;color:#ffffffcc;border-left:2px solid var(--cyan);padding-left:10px;text-align:left;line-height:1.5}
+.preview-caption.style-karaoke .cap-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;background:linear-gradient(90deg,var(--cyan) var(--k,50%),#fff var(--k,50%));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.3}
+.preview-wm{position:absolute;top:12px;right:12px;font-family:'DM Mono',monospace;font-size:9px;color:#ffffff40;background:#00000060;padding:3px 8px;border-radius:4px}
+.preview-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ffffff20}
+.preview-progress-bar{height:100%;background:var(--cyan);transition:width .1s linear}
+.preview-clips-row{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px}
+.preview-clip-chip{font-family:'DM Mono',monospace;font-size:9px;background:#000000aa;border:1px solid var(--border2);padding:3px 8px;border-radius:4px;color:var(--muted2)}
+.scene-bg{position:absolute;inset:0}
+.scene-gaming{background:linear-gradient(180deg,#050510 0%,#0a0520 50%,#150a05 100%)}
+.scene-anime{background:linear-gradient(180deg,#050515 0%,#0d0520 50%,#050d15 100%)}
+.scene-cinematic{background:linear-gradient(180deg,#0a0805 0%,#15100a 50%,#050508 100%)}
+.scene-stock{background:linear-gradient(180deg,#050a10 0%,#0a1020 50%,#050a10 100%)}
+.particle{position:absolute;border-radius:50%;opacity:.3;animation:float linear infinite}
+@keyframes float{0%{transform:translateY(100%) translateX(0)}100%{transform:translateY(-100%) translateX(20px)}}
+.template-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
+.template-thumb{flex-shrink:0;width:80px;cursor:pointer;transition:all .2s}
+.template-thumb-inner{height:52px;border-radius:8px;border:1.5px solid var(--border);overflow:hidden;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:18px}
+.template-thumb:hover .template-thumb-inner,.template-thumb.selected .template-thumb-inner{border-color:var(--cyan)}
+.template-thumb-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-align:center;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loading-wrap{text-align:center;padding:48px 0}
+.loading-icon{width:56px;height:56px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
+.loading-sub{font-size:13px;color:var(--muted)}
+.loading-steps{display:flex;flex-direction:column;gap:8px;max-width:280px;margin:24px auto 0;text-align:left}
+.loading-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.loading-step.done{color:var(--green)}.loading-step.active{color:var(--cyan)}
+.ls-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.cap-edit-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.cap-edit-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);min-width:44px}
+.cap-edit-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+.cap-edit-input:focus{border-color:var(--cyan)}
+.cap-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;border-radius:4px;transition:color .2s}
+.cap-del:hover{color:#ff4444}
+.tier-banner{background:linear-gradient(90deg,#ff6b3510,#a855f710);border:1px solid #ff6b3530;border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.tier-text{font-size:13px;color:var(--muted2)}
+.tier-text strong{color:var(--text)}
+.tier-upgrade{padding:7px 16px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.5px;white-space:nowrap}
+.export-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.export-formats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.format-opt{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all .2s}
+.format-opt:hover,.format-opt.sel{border-color:var(--cyan);background:#00e5ff08}
+.format-opt .fmt{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--cyan)}
+.format-opt .fmt-desc{font-size:11px;color:var(--muted);margin-top:3px}
+.export-btn-big{width:100%;padding:14px;background:var(--cyan);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.export-btn-big:hover{background:#33ecff;transform:translateY(-1px)}
+.song-chip{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.song-chip-icon{width:32px;height:32px;background:var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.song-chip-name{font-size:13px;font-weight:500}
+.song-chip-dur{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
+.song-chip-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:2px;border-radius:4px;transition:color .2s}
+.song-chip-remove:hover{color:#ff4444}
+.waveform{height:40px;display:flex;align-items:center;gap:1.5px;overflow:hidden;margin:12px 0;flex:1}
+.waveform-bar{background:var(--cyan);border-radius:2px;width:3px;opacity:.6;animation:wv .5s ease-in-out infinite alternate}
+@keyframes wv{to{transform:scaleY(.3)}}
+.error-box{background:#ff444420;border:1px solid #ff444440;border-radius:8px;padding:12px 16px;font-size:13px;color:#ff7777;margin-bottom:16px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.pulse{animation:pulse 1.5s ease-in-out infinite}
+@keyframes capIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.cap-anim{animation:capIn .3s ease forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+.slide-in{animation:slideIn .35s ease forwards}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef}=React;
+
+const CLIP_STYLES=[
+  {id:'gaming',icon:'🎮',name:'Gaming',desc:'High-energy clips matched to beat drops — kills, clutch moments, level-ups',tags:['Hype','Action','Cinematic'],free:true},
+  {id:'anime',icon:'⛩',name:'Anime',desc:'Emotional anime scenes timed to lyrics — user-uploaded or sourced packs',tags:['Drama','Motion','Color'],free:false},
+  {id:'cinematic',icon:'🎬',name:'Cinematic',desc:'Movie-quality B-roll that matches the song\'s emotional arc',tags:['Moody','Epic','Story'],free:true},
+  {id:'stock',icon:'🌅',name:'Stock',desc:'Licensed stock footage — safe, clean, always available',tags:['Safe','Minimal','Clean'],free:true},
+];
+const CAPTION_STYLES=[
+  {id:'bold',name:'BOLD DROP',desc:'Big uppercase hit'},
+  {id:'neon',name:'Neon Glow',desc:'Electric color glow'},
+  {id:'minimal',name:'Minimal',desc:'Left-bar subtle'},
+  {id:'karaoke',name:'Karaoke',desc:'Highlight-as-you-go'},
+];
+const TEMPLATES=[
+  {id:'hype',label:'Hype Drop',icon:'⚡'},
+  {id:'emotional',label:'Emotional',icon:'💙'},
+  {id:'dark',label:'Dark Mode',icon:'🖤'},
+  {id:'vibe',label:'Chill Vibe',icon:'🌙'},
+  {id:'rage',label:'Rage Beat',icon:'🔥'},
+];
+const LOADING_STEPS_TEXT=[
+  'Analyzing song structure...','Detecting mood & BPM...','Generating caption timing...','Matching clip themes...','Building video plan...',
+];
+
+function WaveformMock(){
+  const bars=Array.from({length:48},(_,i)=>({h:Math.max(0.2,Math.abs(Math.sin(i*0.7+1)*Math.cos(i*0.3))),delay:`${(i%8)*0.07}s`}));
+  return(<div className="waveform">{bars.map((b,i)=><div key={i} className="waveform-bar" style={{height:`${b.h*100}%`,animationDelay:b.delay}}/>)}</div>);
+}
+
+function SceneMock({style}){
+  const particles=Array.from({length:12},(_,i)=>({left:`${(i*17+7)%100}%`,size:`${2+(i%3)}px`,dur:`${3+i*0.4}s`,delay:`${-(i*0.5)}s`,color:style==='gaming'?'var(--cyan)':style==='anime'?'var(--purple)':style==='cinematic'?'var(--orange)':'var(--green)'}));
+  const cls=`scene-bg scene-${style}`;
+  if(style==='gaming'){return(<div className={cls}>{particles.map((p,i)=><div key={i} className="particle" style={{left:p.left,width:p.size,height:p.size,background:p.color,animationDuration:p.dur,animationDelay:p.delay}}/>)}<svg style={{position:'absolute',inset:0,width:'100%',height:'100%',opacity:0.08}} viewBox="0 0 200 350"><path d="M20 180 L60 120 L100 160 L140 100 L180 140" stroke="#00e5ff" strokeWidth="1" fill="none"/><circle cx="60" cy="120" r="3" fill="#00e5ff"/><circle cx="100" cy="160" r="3" fill="#00e5ff"/><circle cx="140" cy="100" r="4" fill="#ff6b35"/><text x="100" y="50" fill="#ffffff20" textAnchor="middle" fontSize="10" fontFamily="monospace">STAGE 3</text><rect x="10" y="300" width="180" height="6" rx="3" fill="#ffffff10"/><rect x="10" y="300" width="130" height="6" rx="3" fill="#00e5ff40"/></svg></div>);}
+  return(<div className={cls}>{particles.map((p,i)=><div key={i} className="particle" style={{left:p.left,width:p.size,height:p.size,background:p.color,animationDuration:p.dur,animationDelay:p.delay}}/>)}</div>);
+}
+
+function PreviewPhone({captions,captionStyle,clipStyle,template,watermark,progress}){
+  const [capIdx,setCapIdx]=useState(0);
+  const [key,setKey]=useState(0);
+  useEffect(()=>{
+    if(!captions||captions.length===0)return;
+    const idx=Math.min(Math.floor(progress/100*captions.length),captions.length-1);
+    if(idx!==capIdx){setCapIdx(idx);setKey(k=>k+1);}
+  },[progress,captions]);
+  const cap=captions&&captions[capIdx];
+  return(
+    <div className="preview-wrap">
+      <SceneMock style={clipStyle}/>
+      <div className="preview-overlay">
+        <div className="preview-clips-row">
+          <div className="preview-clip-chip">{clipStyle?.toUpperCase()} PACK</div>
+          {template&&<div className="preview-clip-chip">{template.toUpperCase()}</div>}
+        </div>
+        {cap&&(<div key={key} className={`preview-caption style-${captionStyle} cap-anim`} style={{textAlign:'center',marginBottom:24}}><div className="cap-text">{cap.text}</div></div>)}
+      </div>
+      {watermark&&<div className="preview-wm">WAVLR FREE</div>}
+      <div className="preview-progress"><div className="preview-progress-bar" style={{width:`${progress}%`}}/></div>
+    </div>
+  );
+}
+
+function LoadingAnalysis(){
+  const [step,setStep]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setStep(s=>s>=LOADING_STEPS_TEXT.length-1?s:s+1),700);return()=>clearInterval(t);},[]);
+  return(
+    <div className="loading-wrap">
+      <div className="loading-icon"/>
+      <div className="loading-title">AI is analyzing your song</div>
+      <div className="loading-sub">This takes about 10–15 seconds</div>
+      <div className="loading-steps">
+        {LOADING_STEPS_TEXT.map((s,i)=>(<div key={i} className={`loading-step ${i<step?'done':i===step?'active':''}`}><div className="ls-dot"/>{s}</div>))}
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [step,setStep]=useState(1);
+  const [loading,setLoading]=useState(false);
+  const [error,setError]=useState('');
+  const [drag,setDrag]=useState(false);
+  const fileRef=useRef();
+  const [songFile,setSongFile]=useState(null);
+  const [songTitle,setSongTitle]=useState('');
+  const [artist,setArtist]=useState('');
+  const [genre,setGenre]=useState('hip-hop');
+  const [lyrics,setLyrics]=useState('');
+  const [mood,setMood]=useState('hype');
+  const [analysis,setAnalysis]=useState(null);
+  const [captions,setCaptions]=useState([]);
+  const [clipStyle,setClipStyle]=useState('gaming');
+  const [captionStyle,setCaptionStyle]=useState('bold');
+  const [template,setTemplate]=useState('hype');
+  const [previewProgress,setPreviewProgress]=useState(0);
+  const [isPlaying,setIsPlaying]=useState(false);
+  const [exportFmt,setExportFmt]=useState('reels');
+  const [tier]=useState('free');
+
+  useEffect(()=>{
+    if(!isPlaying)return;
+    const t=setInterval(()=>setPreviewProgress(p=>{if(p>=100){setIsPlaying(false);return 100;}return p+0.5;}),50);
+    return()=>clearInterval(t);
+  },[isPlaying]);
+
+  function handleFileSelect(file){
+    if(!file)return;
+    if(!file.type.startsWith('audio/')){setError('Please upload an audio file (MP3, WAV, M4A, etc.)');return;}
+    setSongFile(file);setError('');
+    if(!songTitle){setSongTitle(file.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '));}
+  }
+
+  async function runAnalysis(){
+    if(!songTitle.trim()){setError('Please enter a song title.');return;}
+    setLoading(true);setError('');
+    try{
+      // Calls YOUR secure backend — no API key in the browser
+      const res=await fetch('/api/analyze',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({songTitle,artist,genre,mood,lyrics})
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||'Analysis failed');
+      setAnalysis(data);
+      setCaptions(data.captions||[]);
+      if(data.clipRecommendation)setClipStyle(data.clipRecommendation);
+      if(data.captionStyle)setCaptionStyle(data.captionStyle);
+      if(data.templateSuggestion)setTemplate(data.templateSuggestion);
+      setStep(2);
+    }catch(e){
+      setError('Analysis failed: '+e.message);
+    }finally{setLoading(false);}
+  }
+
+  function updateCaption(idx,text){setCaptions(cs=>cs.map((c,i)=>i===idx?{...c,text}:c));}
+  function deleteCaption(idx){setCaptions(cs=>cs.filter((_,i)=>i!==idx));}
+
+  const stepLabels=['Song Info','AI Analysis','Style & Edit','Preview & Export'];
+
+  return(
+    <div>
+      <div className="bg-grid"/><div className="bg-glow"/>
+      <nav className="nav">
+        <div className="logo syne">Wav<span>lr</span></div>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div className="nav-badge mono">FREE PLAN</div>
+          <button style={{background:'var(--orange)',border:'none',borderRadius:6,padding:'5px 14px',fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer',fontFamily:'DM Mono,monospace'}}>Upgrade</button>
+        </div>
+      </nav>
+      <div className="main">
+        <div className="content slide-in" key={step}>
+          <div style={{display:'flex',alignItems:'center',marginBottom:36}}>
+            {stepLabels.map((label,i)=>(
+              <React.Fragment key={i}>
+                <div className="step-item">
+                  <div className={`step-num ${i+1<step?'done':i+1===step?'active':'idle'}`}>{i+1<step?'✓':i+1}</div>
+                  <span className={`step-label ${i+1===step?'active':''}`}>{label}</span>
+                </div>
+                {i<stepLabels.length-1&&<div className="step-sep"/>}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* STEP 1 */}
+          {step===1&&(
+            <>
+              <div className="page-title syne">Drop your track.</div>
+              <div className="page-sub">Wavlr reads your song and builds a full video plan in seconds.</div>
+              {error&&<div className="error-box">{error}</div>}
+              {!songFile?(
+                <div className={`upload-zone ${drag?'drag':''}`} onClick={()=>fileRef.current.click()} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);handleFileSelect(e.dataTransfer.files[0])}}>
+                  <input type="file" ref={fileRef} accept="audio/*" style={{display:'none'}} onChange={e=>handleFileSelect(e.target.files[0])}/>
+                  <div className="upload-icon">🎵</div>
+                  <div className="upload-title syne">Upload your song</div>
+                  <div className="upload-sub">MP3, WAV, M4A, FLAC — up to 50MB</div>
+                  <div className="upload-btn">Browse files</div>
+                  <div style={{marginTop:12,fontSize:12,color:'var(--muted)'}}>or fill in the details below without uploading</div>
+                </div>
+              ):(
+                <div className="song-chip">
+                  <div className="song-chip-icon">🎵</div>
+                  <div><div className="song-chip-name">{songFile.name}</div><div className="song-chip-dur mono">{(songFile.size/1024/1024).toFixed(1)} MB</div></div>
+                  <WaveformMock/>
+                  <button className="song-chip-remove" onClick={()=>setSongFile(null)}>×</button>
+                </div>
+              )}
+              <div style={{marginTop:24}}>
+                <div className="card-label">SONG DETAILS</div>
+                <div className="form-grid" style={{marginBottom:14}}>
+                  <div className="field"><label>Song Title *</label><input value={songTitle} onChange={e=>setSongTitle(e.target.value)} placeholder="e.g. No Days Off"/></div>
+                  <div className="field"><label>Artist Name</label><input value={artist} onChange={e=>setArtist(e.target.value)} placeholder="e.g. Lil Persistence"/></div>
+                </div>
+                <div className="form-grid" style={{marginBottom:14}}>
+                  <div className="field"><label>Genre</label>
+                    <select value={genre} onChange={e=>setGenre(e.target.value)}>
+                      <option value="hip-hop">Hip-Hop / Rap</option><option value="trap">Trap</option><option value="rnb">R&B / Soul</option>
+                      <option value="pop">Pop</option><option value="edm">EDM / Electronic</option><option value="drill">Drill</option>
+                      <option value="afrobeats">Afrobeats</option><option value="rock">Rock / Alt</option><option value="lo-fi">Lo-Fi / Chill</option>
+                    </select>
+                  </div>
+                  <div className="field"><label>Overall Mood</label>
+                    <select value={mood} onChange={e=>setMood(e.target.value)}>
+                      <option value="hype">Hype / Aggressive</option><option value="emotional">Emotional / Deep</option><option value="chill">Chill / Relaxed</option>
+                      <option value="dark">Dark / Moody</option><option value="triumphant">Triumphant / Victorious</option><option value="romantic">Romantic</option><option value="party">Party / Fun</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="field"><label>Paste a verse or describe the song (improves AI output)</label>
+                  <textarea value={lyrics} onChange={e=>setLyrics(e.target.value)} placeholder="Paste a hook, verse, or describe: 'dark trap beat about grinding and making it out the hood...'"/>
+                </div>
+              </div>
+              <div className="btn-row">
+                <div style={{fontSize:12,color:'var(--muted)'}}>
+                  <span className="pulse" style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:'var(--green)',marginRight:6}}/>
+                  Powered by Claude AI
+                </div>
+                <button className="btn btn-primary" onClick={loading?undefined:runAnalysis} disabled={loading||!songTitle.trim()}>
+                  {loading?'Analyzing...':'Analyze Song →'}
+                </button>
+              </div>
+              {loading&&<LoadingAnalysis/>}
+            </>
+          )}
+
+          {/* STEP 2 */}
+          {step===2&&analysis&&(
+            <>
+              <div className="page-title syne">AI analysis complete.</div>
+              <div className="page-sub">Here's what Wavlr found in <strong style={{color:'var(--text)'}}>{songTitle}</strong>. Edit anything you want.</div>
+              <div className="analysis-grid">
+                <div className="metric-chip"><div className="metric-val mono">{analysis.bpm}</div><div className="metric-label">BPM</div></div>
+                <div className="metric-chip"><div className="metric-val mono" style={{fontSize:16}}>{analysis.key}</div><div className="metric-label">Key</div></div>
+                <div className="metric-chip"><div className="metric-val mono" style={{fontSize:16,color:analysis.energy==='High'?'var(--orange)':'var(--cyan)'}}>{analysis.energy}</div><div className="metric-label">Energy</div></div>
+              </div>
+              <div className="mood-bar">
+                <div className="mood-title">Detected Mood & Themes</div>
+                <div className="mood-tags">
+                  <div className="mood-tag energy">{analysis.primaryMood}</div>
+                  {(analysis.themes||[]).map((t,i)=><div key={i} className="mood-tag theme">{t}</div>)}
+                  {(analysis.vibes||[]).map((v,i)=><div key={i} className="mood-tag vibe">{v}</div>)}
+                </div>
+              </div>
+              <div className="card">
+                <div className="card-label">Generated Captions — click to edit</div>
+                {captions.map((c,i)=>(
+                  <div key={i} className="cap-edit-row">
+                    <div className="cap-edit-time">{c.time}</div>
+                    <input className="cap-edit-input" value={c.text} onChange={e=>updateCaption(i,e.target.value)}/>
+                    <div style={{fontSize:10,fontFamily:'DM Mono',color:'var(--muted)',minWidth:44}}>{c.type}</div>
+                    <button className="cap-del" onClick={()=>deleteCaption(i)}>×</button>
+                  </div>
+                ))}
+              </div>
+              {analysis.socialHook&&(
+                <div className="card" style={{marginTop:14}}>
+                  <div className="card-label">Suggested Social Caption</div>
+                  <div style={{fontSize:14,marginBottom:10,lineHeight:1.6}}>"{analysis.socialHook}"</div>
+                  <div style={{fontSize:12,color:'var(--cyan)'}}>{(analysis.hashtags||[]).join(' ')}</div>
+                </div>
+              )}
+              <div style={{background:'#00e5ff08',border:'1px solid #00e5ff25',borderRadius:10,padding:'14px 18px',marginTop:14,fontSize:13,color:'var(--muted2)'}}>
+                🎮 AI recommends: <strong style={{color:'var(--text)'}}>{analysis.clipRecommendation} clips</strong> with <strong style={{color:'var(--text)'}}>{analysis.captionStyle} captions</strong> for this track.
+              </div>
+              <div className="btn-row">
+                <button className="btn btn-ghost" onClick={()=>setStep(1)}>← Back</button>
+                <button className="btn btn-primary" onClick={()=>setStep(3)}>Choose Style →</button>
+              </div>
+            </>
+          )}
+
+          {/* STEP 3 */}
+          {step===3&&(
+            <>
+              <div className="page-title syne">Style your video.</div>
+              <div className="page-sub">Choose clip style, caption look, and template.</div>
+              <div className="tier-banner">
+                <div className="tier-text"><strong>Free Plan:</strong> Gaming, Stock & Cinematic clips available. Anime requires Pro.</div>
+                <button className="tier-upgrade">Upgrade to Pro</button>
+              </div>
+              <div className="card-label" style={{marginBottom:10}}>CLIP STYLE</div>
+              <div className="style-grid" style={{marginBottom:24}}>
+                {CLIP_STYLES.map(s=>(
+                  <div key={s.id} className={`style-card ${clipStyle===s.id?'selected':''}`} onClick={()=>{if(s.free||tier!=='free')setClipStyle(s.id);}} style={!s.free&&tier==='free'?{opacity:.6,cursor:'not-allowed'}:{}}>
+                    {!s.free&&tier==='free'&&<div className="pro-badge">PRO</div>}
+                    <div className="style-card-icon">{s.icon}</div>
+                    <div className="style-card-name syne">{s.name}</div>
+                    <div className="style-card-desc">{s.desc}</div>
+                    <div className="style-card-tags">{s.tags.map(t=><div key={t} className="stag">{t}</div>)}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="card-label" style={{marginBottom:10}}>CAPTION STYLE</div>
+              <div style={{display:'flex',gap:10,marginBottom:24,flexWrap:'wrap'}}>
+                {CAPTION_STYLES.map(cs=>(
+                  <div key={cs.id} onClick={()=>setCaptionStyle(cs.id)} style={{padding:'10px 18px',border:`1.5px solid ${captionStyle===cs.id?'var(--cyan)':'var(--border)'}`,borderRadius:8,cursor:'pointer',background:captionStyle===cs.id?'#00e5ff08':'var(--card)',transition:'all .2s',textAlign:'center',minWidth:110}}>
+                    <div style={{fontFamily:'Syne,sans-serif',fontWeight:700,fontSize:13}}>{cs.name}</div>
+                    <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{cs.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="card-label" style={{marginBottom:10}}>TEMPLATE VIBE</div>
+              <div className="template-row" style={{marginBottom:24}}>
+                {TEMPLATES.map(t=>(
+                  <div key={t.id} className={`template-thumb ${template===t.id?'selected':''}`} onClick={()=>setTemplate(t.id)}>
+                    <div className="template-thumb-inner" style={{background:template===t.id?'#00e5ff12':'var(--card2)',fontSize:22}}>{t.icon}</div>
+                    <div className="template-thumb-label">{t.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="btn-row">
+                <button className="btn btn-ghost" onClick={()=>setStep(2)}>← Back</button>
+                <button className="btn btn-primary" onClick={()=>{setPreviewProgress(0);setStep(4);}}>Preview Video →</button>
+              </div>
+            </>
+          )}
+
+          {/* STEP 4 */}
+          {step===4&&(
+            <>
+              <div className="page-title syne">Your video is ready.</div>
+              <div className="page-sub">Preview, adjust, and export to your platform.</div>
+              <div style={{display:'grid',gridTemplateColumns:'260px 1fr',gap:28,alignItems:'start'}}>
+                <div>
+                  <PreviewPhone captions={captions} captionStyle={captionStyle} clipStyle={clipStyle} template={template} watermark={tier==='free'} progress={previewProgress}/>
+                  <div style={{display:'flex',gap:8,marginTop:12,justifyContent:'center'}}>
+                    <button onClick={()=>{if(previewProgress>=100)setPreviewProgress(0);setIsPlaying(p=>!p);}} style={{flex:1,padding:'9px',background:'var(--cyan)',border:'none',borderRadius:8,fontWeight:700,fontSize:13,cursor:'pointer',color:'#000',fontFamily:'Syne,sans-serif'}}>
+                      {isPlaying?'⏸ Pause':previewProgress>=100?'↺ Replay':'▶ Play'}
+                    </button>
+                    <button onClick={()=>{setPreviewProgress(0);setIsPlaying(false);}} style={{padding:'9px 14px',background:'var(--card2)',border:'1px solid var(--border2)',borderRadius:8,color:'var(--muted2)',cursor:'pointer',fontSize:13}}>↺</button>
+                  </div>
+                  {tier==='free'&&<div style={{marginTop:10,textAlign:'center',fontSize:11,color:'var(--orange)',fontFamily:'DM Mono,monospace'}}>⚠ Watermark on free plan</div>}
+                </div>
+                <div>
+                  <div className="card" style={{marginBottom:14}}>
+                    <div className="card-label">VIDEO SUMMARY</div>
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                      {[['Song',songTitle||'—'],['Artist',artist||'—'],['Style',clipStyle],['Captions',captionStyle],['BPM',analysis?.bpm||'—'],['Mood',analysis?.primaryMood||'—']].map(([k,v])=>(
+                        <div key={k} style={{fontSize:13}}><span style={{color:'var(--muted)',fontFamily:'DM Mono,monospace',fontSize:11}}>{k}: </span><span style={{fontWeight:500}}>{v}</span></div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="export-card">
+                    <div className="card-label">EXPORT FORMAT</div>
+                    <div className="export-formats">
+                      {[{id:'reels',label:'Reels / TikTok',desc:'9:16 · 1080p'},{id:'square',label:'Square Post',desc:'1:1 · 1080p'},{id:'landscape',label:'YouTube',desc:'16:9 · 1080p'}].map(f=>(
+                        <div key={f.id} className={`format-opt ${exportFmt===f.id?'sel':''}`} onClick={()=>setExportFmt(f.id)}>
+                          <div className="fmt">{f.label}</div><div className="fmt-desc">{f.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {tier==='free'&&<div style={{background:'#ff6b3510',border:'1px solid #ff6b3525',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginBottom:14}}>Free plan exports at 720p with watermark. <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}}>Upgrade for 4K + no watermark →</span></div>}
+                    <button className="export-btn-big" onClick={()=>alert('Export coming in Week 3! For now the AI analysis and full flow is working.')}>
+                      ⬇ Export {exportFmt==='reels'?'Reels/TikTok':exportFmt==='square'?'Square':'YouTube'} Video
+                    </button>
+                    <div style={{marginTop:12,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>Estimated render time: ~45 seconds · Video saved to your account</div>
+                  </div>
+                  <button className="btn btn-ghost" style={{marginTop:14,width:'100%'}} onClick={()=>{setStep(1);setAnalysis(null);setCaptions([]);setPreviewProgress(0);setIsPlaying(false);}}>+ Create Another Video</button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
