@@ -9,11 +9,7 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script>
-  // Replace this with your actual Clerk publishable key
-  window.CLERK_PUBLISHABLE_KEY = 'pk_test_bmV4dC1naG9zdC05Mi5jbGVyay5hY2NvdW50cy5kZXYk';
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5.3.0/dist/clerk.browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -27,103 +23,92 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
 .bg-glow{position:fixed;top:-20%;left:50%;transform:translateX(-50%);width:80vw;height:60vh;background:radial-gradient(ellipse,#00e5ff08 0%,transparent 70%);pointer-events:none;z-index:0}
 
-/* Auth screens */
+/* Auth */
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;padding:20px}
 .auth-card{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:40px;width:100%;max-width:420px;text-align:center}
 .auth-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px}
 .auth-logo span{color:var(--cyan)}
-.auth-sub{font-size:14px;color:var(--muted2);margin-bottom:32px;line-height:1.5}
-.auth-btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif;margin-bottom:12px}
+.auth-sub{font-size:14px;color:var(--muted2);margin-bottom:28px;line-height:1.5}
+.auth-input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s;display:block}
+.auth-input:focus{border-color:var(--cyan)}
+.auth-btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif;margin-bottom:10px;display:block}
 .auth-btn-primary{background:var(--cyan);color:#000}
 .auth-btn-primary:hover{background:#33ecff}
-.auth-btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
-.auth-btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
-.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0}
-.auth-divider-line{flex:1;height:1px;background:var(--border)}
-.auth-divider-text{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
-.auth-input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s}
-.auth-input:focus{border-color:var(--cyan)}
-.auth-switch{font-size:13px;color:var(--muted);margin-top:16px}
+.auth-btn-primary:disabled{background:var(--card2);color:var(--muted);cursor:not-allowed}
+.auth-switch{font-size:13px;color:var(--muted);margin-top:14px}
 .auth-switch span{color:var(--cyan);cursor:pointer;font-weight:500}
-.auth-switch span:hover{text-decoration:underline}
-.auth-features{display:flex;flex-direction:column;gap:8px;margin:24px 0;text-align:left}
+.err-box{background:#ff444420;border:1px solid #ff444440;border-radius:8px;padding:10px 14px;font-size:13px;color:#ff7777;margin-bottom:12px;text-align:left}
+.success-box{background:#22d3a020;border:1px solid #22d3a040;border-radius:8px;padding:10px 14px;font-size:13px;color:#22d3a0;margin-bottom:12px;text-align:left}
+.auth-features{display:flex;flex-direction:column;gap:8px;margin:20px 0;text-align:left}
 .auth-feature{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted2)}
 .auth-feature-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0}
-.error-box{background:#ff444420;border:1px solid #ff444440;border-radius:8px;padding:10px 14px;font-size:13px;color:#ff7777;margin-bottom:12px;text-align:left}
 
 /* Nav */
 .nav{position:fixed;top:0;left:0;right:0;height:56px;background:#06060ecc;backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:100}
-.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
 .logo span{color:var(--cyan)}
 .nav-right{display:flex;align-items:center;gap:12px}
 .nav-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
-.nav-user{display:flex;align-items:center;gap:8px}
-.nav-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;cursor:pointer}
-.nav-username{font-size:13px;color:var(--muted2);font-family:'DM Mono',monospace}
+.nav-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000}
+.nav-email{font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout-btn{padding:5px 12px;background:transparent;border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
 .signout-btn:hover{border-color:#ff4444;color:#ff4444}
-.upgrade-btn{padding:6px 14px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace}
+.upgrade-nav-btn{padding:6px 14px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer}
 
-/* Dashboard */
+/* Main */
 .main{padding-top:56px;min-height:100vh;position:relative;z-index:1}
 .content{max-width:860px;margin:0 auto;padding:48px 28px}
 .page-title{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;line-height:1.1;margin-bottom:10px}
-.page-sub{font-size:15px;color:var(--muted2);margin-bottom:40px}
+.page-sub{font-size:15px;color:var(--muted2);margin-bottom:36px}
 
-/* Plan banner */
-.plan-banner{border-radius:14px;padding:20px 24px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.plan-banner.free{background:linear-gradient(90deg,#ffffff06,#ffffff03);border:1px solid var(--border2)}
+/* Dashboard */
+.plan-banner{border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(90deg,#ffffff06,#ffffff03);border:1px solid var(--border2)}
 .plan-banner.pro{background:linear-gradient(90deg,#00e5ff10,#a855f710);border:1px solid #00e5ff30}
 .plan-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
-.plan-name.free{color:var(--text)}
-.plan-name.pro{color:var(--cyan)}
 .plan-desc{font-size:13px;color:var(--muted2)}
-.plan-upgrade{padding:10px 22px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap}
-
-/* Usage */
-.usage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+.plan-upgrade-btn{padding:10px 22px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap}
+.usage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
 .usage-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
 .usage-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 .usage-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--cyan)}
 .usage-max{font-size:12px;color:var(--muted);margin-top:4px}
 .usage-bar{height:4px;background:var(--border2);border-radius:2px;margin-top:10px;overflow:hidden}
-.usage-bar-fill{height:100%;border-radius:2px;background:var(--cyan);transition:width .5s ease}
-.usage-bar-fill.warning{background:var(--orange)}
-.usage-bar-fill.full{background:#ff4444}
+.usage-fill{height:100%;border-radius:2px;background:var(--cyan);transition:width .5s}
+.usage-fill.warn{background:var(--orange)}
+.usage-fill.full{background:#ff4444}
+.create-btn{padding:14px 32px;background:var(--cyan);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.create-btn:hover{background:#33ecff;transform:translateY(-1px)}
 
-/* Steps */
-.steps{display:flex;align-items:center;margin-bottom:36px}
-.step-item{display:flex;align-items:center;gap:8px;padding:6px 0}
-.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;flex-shrink:0}
-.step-num.done{background:var(--green);color:#000}
-.step-num.active{background:var(--cyan);color:#000}
-.step-num.idle{background:var(--card2);color:var(--muted);border:1px solid var(--border2)}
-.step-label{font-size:12px;color:var(--muted);white-space:nowrap}
-.step-label.active{color:var(--text)}
-.step-sep{width:32px;height:1px;background:var(--border2);margin:0 4px;flex-shrink:0}
-
-/* Cards */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-.card+.card{margin-top:16px}
-.card-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
-
-/* Upload */
-.upload-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:56px 32px;text-align:center;cursor:pointer;transition:all .2s}
+/* Upload zone */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--cyan);background:#00e5ff06}
-.upload-icon{width:48px;height:48px;margin:0 auto 16px;background:var(--card2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.upload-icon{width:52px;height:52px;margin:0 auto 16px;background:var(--card2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
 .upload-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
 .upload-sub{font-size:13px;color:var(--muted)}
-.upload-btn-pill{display:inline-block;margin-top:20px;padding:9px 20px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
-.upload-btn-pill:hover{border-color:var(--cyan);color:var(--cyan)}
+.browse-pill{display:inline-block;margin-top:18px;padding:9px 20px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;font-size:13px;cursor:pointer;transition:all .2s}
+.browse-pill:hover{border-color:var(--cyan);color:var(--cyan)}
+.upload-or{margin-top:16px;font-size:12px;color:var(--muted)}
+
+/* Song chip */
+.song-chip{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.song-icon{width:36px;height:36px;background:var(--cyan);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.song-name{font-size:13px;font-weight:600}
+.song-size{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
+.song-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:2px;transition:color .2s;line-height:1}
+.song-remove:hover{color:#ff4444}
+.waveform{height:36px;display:flex;align-items:center;gap:1.5px;flex:1;overflow:hidden}
+.wb{background:var(--cyan);border-radius:2px;width:3px;opacity:.6;animation:wv .5s ease-in-out infinite alternate}
+@keyframes wv{to{transform:scaleY(.2)}}
 
 /* Form */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.field label{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
 .field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan)}
 .field select option{background:#14141f}
 .field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.section-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
 
 /* Buttons */
 .btn{padding:11px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif}
@@ -134,95 +119,106 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .btn-ghost:hover{border-color:var(--text);color:var(--text)}
 .btn-row{display:flex;align-items:center;justify-content:space-between;margin-top:32px}
 
-/* Song chip */
-.song-chip{background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.song-chip-icon{width:32px;height:32px;background:var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.song-chip-name{font-size:13px;font-weight:500}
-.song-chip-dur{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
-.song-chip-remove{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:2px;border-radius:4px;transition:color .2s}
-.song-chip-remove:hover{color:#ff4444}
-.waveform{height:40px;display:flex;align-items:center;gap:1.5px;overflow:hidden;margin:12px 0;flex:1}
-.waveform-bar{background:var(--cyan);border-radius:2px;width:3px;opacity:.6;animation:wv .5s ease-in-out infinite alternate}
-@keyframes wv{to{transform:scaleY(.3)}}
+/* Cards */
+.gcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:14px}
 
-/* Analysis */
-.analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.metric-chip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+/* Metrics */
+.metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
 .metric-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--cyan)}
-.metric-label{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-.mood-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
-.mood-tags{display:flex;flex-wrap:wrap;gap:8px}
-.mood-tag{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:'DM Mono',monospace}
-.mood-tag.energy{background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
-.mood-tag.vibe{background:#a855f720;border:1px solid #a855f740;color:#c084fc}
-.mood-tag.theme{background:#00e5ff15;border:1px solid #00e5ff30;color:var(--cyan)}
-.cap-edit-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-.cap-edit-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);min-width:44px}
-.cap-edit-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
-.cap-edit-input:focus{border-color:var(--cyan)}
-.cap-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;border-radius:4px;transition:color .2s}
+.metric-lbl{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+
+/* Tags */
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;font-family:'DM Mono',monospace}
+.tag-e{background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
+.tag-v{background:#a855f720;border:1px solid #a855f740;color:#c084fc}
+.tag-t{background:#00e5ff15;border:1px solid #00e5ff30;color:var(--cyan)}
+
+/* Captions */
+.cap-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cap-row:last-child{border-bottom:none}
+.cap-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--cyan);min-width:40px}
+.cap-input{flex:1;background:transparent;border:none;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;padding:2px 0}
+.cap-type{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);min-width:44px;text-align:right}
+.cap-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px;transition:color .2s;line-height:1}
 .cap-del:hover{color:#ff4444}
 
-/* Style cards */
-.style-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.style-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.style-card:hover,.style-card.selected{border-color:var(--cyan);background:#00e5ff06}
-.style-card.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
-.style-card-icon{font-size:28px;margin-bottom:10px}
-.style-card-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:5px}
-.style-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
-.style-card-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+/* Style grid */
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.scard{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.scard:hover,.scard.sel{border-color:var(--cyan);background:#00e5ff06}
+.scard.sel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.scard-icon{font-size:26px;margin-bottom:10px}
+.scard-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.scard-desc{font-size:12px;color:var(--muted);line-height:1.5}
+.scard-tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
 .stag{font-size:10px;font-family:'DM Mono',monospace;padding:3px 7px;border-radius:4px;background:var(--surface);border:1px solid var(--border);color:var(--muted2)}
-.pro-badge{position:absolute;top:10px;right:10px;font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
+.pro-pill{position:absolute;top:10px;right:10px;font-size:9px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;background:#ff6b3520;border:1px solid #ff6b3540;color:#ff8c5a}
 
-/* Templates */
-.template-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
-.template-thumb{flex-shrink:0;width:80px;cursor:pointer;transition:all .2s}
-.template-thumb-inner{height:52px;border-radius:8px;border:1.5px solid var(--border);overflow:hidden;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:18px}
-.template-thumb:hover .template-thumb-inner,.template-thumb.selected .template-thumb-inner{border-color:var(--cyan)}
-.template-thumb-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-align:center;margin-top:5px}
-
-/* Caption styles */
-.cap-style-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
-.cpill{padding:10px 18px;border-radius:8px;cursor:pointer;transition:all .2s;text-align:center;background:var(--card);border:1.5px solid var(--border);min-width:110px}
-.cpill:hover{border-color:var(--border2)}
-.cpill.selected{border-color:var(--cyan);background:#00e5ff08}
+/* Cap styles */
+.cap-style-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.cpill{padding:10px 18px;border-radius:8px;cursor:pointer;transition:all .2s;text-align:center;background:var(--card);border:1.5px solid var(--border);min-width:108px}
+.cpill.sel{border-color:var(--cyan);background:#00e5ff08}
 .cpill-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
 .cpill-desc{font-size:11px;color:var(--muted);margin-top:3px}
 
-/* Preview */
-.preview-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:9/16;max-width:240px;margin:0 auto;border:1px solid var(--border2)}
-.preview-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:16px}
-.preview-caption.style-bold .cap-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-shadow:0 2px 20px #000a;line-height:1.2}
-.preview-caption.style-neon .cap-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--cyan);text-shadow:0 0 20px var(--cyan),0 0 40px var(--cyan2);line-height:1.3}
-.preview-caption.style-minimal .cap-text{font-family:'DM Mono',monospace;font-size:15px;font-weight:400;color:#ffffffcc;border-left:2px solid var(--cyan);padding-left:10px;text-align:left;line-height:1.5}
-.preview-caption.style-karaoke .cap-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;background:linear-gradient(90deg,var(--cyan) 50%,#fff 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.3}
-.preview-wm{position:absolute;top:12px;right:12px;font-family:'DM Mono',monospace;font-size:9px;color:#ffffff40;background:#00000060;padding:3px 8px;border-radius:4px}
-.preview-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ffffff20}
-.preview-progress-bar{height:100%;background:var(--cyan);transition:width .1s linear}
-.preview-clip-chip{font-family:'DM Mono',monospace;font-size:9px;background:#000000aa;border:1px solid var(--border2);padding:3px 8px;border-radius:4px;color:var(--muted2);position:absolute;top:12px;left:12px}
-.scene-bg{position:absolute;inset:0}
-.scene-gaming{background:linear-gradient(180deg,#050510 0%,#0a0520 50%,#150a05 100%)}
-.scene-anime{background:linear-gradient(180deg,#050515 0%,#0d0520 50%,#050d15 100%)}
-.scene-cinematic{background:linear-gradient(180deg,#0a0805 0%,#15100a 50%,#050508 100%)}
-.scene-stock{background:linear-gradient(180deg,#050a10 0%,#0a1020 50%,#050a10 100%)}
-.particle{position:absolute;border-radius:50%;opacity:.3;animation:float linear infinite}
-@keyframes float{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
-
-/* Export */
-.export-formats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
-.format-opt{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all .2s}
-.format-opt:hover,.format-opt.sel{border-color:var(--cyan);background:#00e5ff08}
-.format-opt .fmt{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--cyan)}
-.format-opt .fmt-desc{font-size:11px;color:var(--muted);margin-top:3px}
-.export-btn-big{width:100%;padding:14px;background:var(--cyan);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
-.export-btn-big:hover{background:#33ecff;transform:translateY(-1px)}
+/* Templates */
+.tpl-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:22px}
+.tpl{flex-shrink:0;width:80px;cursor:pointer}
+.tpl-inner{height:52px;border-radius:8px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;background:var(--card2)}
+.tpl.sel .tpl-inner,.tpl:hover .tpl-inner{border-color:var(--cyan)}
+.tpl-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-align:center;margin-top:5px}
 
 /* Tier banner */
-.tier-banner{background:linear-gradient(90deg,#ff6b3510,#a855f710);border:1px solid #ff6b3530;border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
-.tier-text{font-size:13px;color:var(--muted2)}
-.tier-text strong{color:var(--text)}
-.tier-upgrade{padding:7px 16px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace}
+.tier-ban{background:linear-gradient(90deg,#ff6b3510,#a855f710);border:1px solid #ff6b3530;border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.tier-txt{font-size:13px;color:var(--muted2)}
+.tier-txt strong{color:var(--text)}
+.tier-up{padding:7px 16px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace}
+
+/* Preview */
+.preview-phone{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:9/16;max-width:240px;margin:0 auto;border:1px solid var(--border2)}
+.phone-scene{position:absolute;inset:0}
+.sc-gaming{background:linear-gradient(180deg,#050510 0%,#0a0520 50%,#150a05 100%)}
+.sc-anime{background:linear-gradient(180deg,#050515 0%,#0d0520 50%,#050d15 100%)}
+.sc-cinematic{background:linear-gradient(180deg,#0a0805 0%,#15100a 50%,#050508 100%)}
+.sc-stock{background:linear-gradient(180deg,#050a10 0%,#0a1020 50%,#050a10 100%)}
+.pt{position:absolute;border-radius:50%;opacity:.3;animation:pfloat linear infinite}
+@keyframes pfloat{0%{transform:translateY(110%)}100%{transform:translateY(-10%)}}
+.phone-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+.phone-cap{text-align:center;margin-bottom:20px}
+.cap-bold .cap-t{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;text-shadow:0 2px 20px #000a;line-height:1.2}
+.cap-neon .cap-t{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);text-shadow:0 0 20px var(--cyan),0 0 40px var(--cyan2);line-height:1.2}
+.cap-minimal .cap-t{font-family:'DM Mono',monospace;font-size:13px;color:#ffffffcc;border-left:2px solid var(--cyan);padding-left:10px;text-align:left;line-height:1.5}
+.cap-karaoke .cap-t{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;background:linear-gradient(90deg,var(--cyan) 50%,#fff 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.3}
+.phone-wm{position:absolute;top:10px;right:10px;font-family:'DM Mono',monospace;font-size:8px;color:#ffffff30;background:#00000060;padding:3px 7px;border-radius:4px}
+.phone-chip{position:absolute;top:10px;left:10px;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);background:#00000080;border:1px solid var(--border);padding:3px 7px;border-radius:4px}
+.phone-prog{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ffffff12}
+.phone-prog-bar{height:100%;background:var(--cyan);transition:width .08s linear}
+@keyframes capIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.cap-anim{animation:capIn .25s ease forwards}
+
+/* Export */
+.fmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.fmt-opt{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all .2s}
+.fmt-opt:hover,.fmt-opt.sel{border-color:var(--cyan);background:#00e5ff08}
+.fmt-name{font-family:'DM Mono',monospace;font-size:12px;color:var(--cyan);font-weight:500}
+.fmt-desc{font-size:11px;color:var(--muted);margin-top:3px}
+.export-big{width:100%;padding:14px;background:var(--cyan);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.export-big:hover{background:#33ecff;transform:translateY(-1px)}
+
+/* Social */
+.social-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:12px}
+.social-quote{font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:8px;font-style:italic}
+.hashtags{font-size:11px;color:var(--cyan);font-family:'DM Mono',monospace}
+.ai-rec{background:#00e5ff08;border:1px solid #00e5ff20;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:13px;color:var(--muted2)}
+.ai-rec strong{color:var(--text)}
+
+/* Summary */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sum-item{font-size:13px}
+.sum-key{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
+.sum-val{font-weight:500}
 
 /* Limit modal */
 .modal-overlay{position:fixed;inset:0;background:#000000aa;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -230,40 +226,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .modal-icon{font-size:40px;margin-bottom:16px}
 .modal-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
 .modal-sub{font-size:14px;color:var(--muted2);margin-bottom:24px;line-height:1.6}
-.modal-btn{width:100%;padding:13px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif;margin-bottom:10px}
-.modal-btn-primary{background:linear-gradient(90deg,var(--orange),var(--purple));color:#fff}
-.modal-btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+.modal-btn{width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif;margin-bottom:10px}
+.modal-primary{background:linear-gradient(90deg,var(--orange),var(--purple));color:#fff}
+.modal-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
 
 /* Loading */
 .loading-wrap{text-align:center;padding:48px 0}
-.loading-icon{width:56px;height:56px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+.spinner{width:52px;height:52px;border:2px solid var(--border2);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px}
 .loading-sub{font-size:13px;color:var(--muted)}
-.loading-steps{display:flex;flex-direction:column;gap:8px;max-width:280px;margin:24px auto 0;text-align:left}
-.loading-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
-.loading-step.done{color:var(--green)}.loading-step.active{color:var(--cyan)}
-.ls-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
-
-/* Social */
-.social-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px}
-.social-hook{font-size:14px;line-height:1.7;color:var(--muted2);margin-bottom:8px}
-.hashtags{font-size:12px;color:var(--cyan);font-family:'DM Mono',monospace}
-.ai-rec{background:#00e5ff08;border:1px solid #00e5ff25;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:13px;color:var(--muted2)}
-.ai-rec strong{color:var(--text)}
-
-/* Summary */
-.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sum-item{font-size:13px}
-.sum-key{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.sum-val{font-weight:500;color:var(--text)}
+.lsteps{display:flex;flex-direction:column;gap:8px;max-width:260px;margin:22px auto 0;text-align:left}
+.lstep{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+.lstep.done{color:var(--green)}.lstep.active{color:var(--cyan)}
+.ldot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .pulse{animation:pulse 1.5s ease-in-out infinite}
-@keyframes capIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.cap-anim{animation:capIn .3s ease forwards}
-@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
-.slide-in{animation:slideIn .35s ease forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.slide-in{animation:slideIn .3s ease forwards}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -274,20 +255,24 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
 
+const SUPABASE_URL='https://oyutrbtaxqpxadyvhktc.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_DR3eM1Pp07AM2wiZsyt-ZQ_Gjc3pgM0';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
 const FREE_LIMIT=2;
 const PRO_LIMIT=20;
 
 const CLIP_STYLES=[
-  {id:'gaming',icon:'🎮',name:'Gaming',desc:'High-energy clips matched to beat drops',tags:['Hype','Action'],free:true},
-  {id:'anime',icon:'⛩',name:'Anime',desc:'Emotional anime scenes timed to lyrics',tags:['Drama','Motion'],free:false},
-  {id:'cinematic',icon:'🎬',name:'Cinematic',desc:'Movie-quality B-roll for your track',tags:['Moody','Epic'],free:true},
-  {id:'stock',icon:'🌅',name:'Stock',desc:'Licensed stock footage, always safe',tags:['Safe','Clean'],free:true},
+  {id:'gaming',icon:'🎮',name:'Gaming',desc:'Beat-synced kills and clutch moments matched to your drop',tags:['Hype','Action'],free:true},
+  {id:'anime',icon:'⛩',name:'Anime',desc:'Cinematic anime scenes timed to your lyrics and mood',tags:['Drama','Motion'],free:false},
+  {id:'cinematic',icon:'🎬',name:'Cinematic',desc:'Movie-quality B-roll that follows your track\'s arc',tags:['Moody','Epic'],free:true},
+  {id:'stock',icon:'🌅',name:'Stock',desc:'Clean licensed footage, always safe to use',tags:['Safe','Clean'],free:true},
 ];
 const CAP_STYLES=[
   {id:'bold',name:'BOLD DROP',desc:'Big uppercase hit'},
   {id:'neon',name:'Neon Glow',desc:'Electric color glow'},
   {id:'minimal',name:'Minimal',desc:'Left-bar subtle'},
-  {id:'karaoke',name:'Karaoke',desc:'Highlight-as-you-go'},
+  {id:'karaoke',name:'Karaoke',desc:'Highlight as you go'},
 ];
 const TEMPLATES=[
   {id:'hype',label:'Hype Drop',icon:'⚡'},
@@ -296,77 +281,70 @@ const TEMPLATES=[
   {id:'vibe',label:'Chill Vibe',icon:'🌙'},
   {id:'rage',label:'Rage Beat',icon:'🔥'},
 ];
-const LOADING_STEPS=['Analyzing song structure...','Detecting mood & BPM...','Generating caption timing...','Matching clip themes...','Building video plan...'];
+const LSTEPS=['Analyzing song structure...','Detecting mood & BPM...','Generating caption timing...','Matching clip themes...','Building video plan...'];
 
 function Waveform(){
-  const bars=Array.from({length:48},(_,i)=>({h:Math.max(0.2,Math.abs(Math.sin(i*0.7+1)*Math.cos(i*0.3))),d:`${(i%8)*0.07}s`}));
-  return <div className="waveform">{bars.map((b,i)=><div key={i} className="waveform-bar" style={{height:`${b.h*100}%`,animationDelay:b.d}}/>)}</div>;
+  const bars=Array.from({length:44},(_,i)=>({h:Math.max(0.15,Math.abs(Math.sin(i*.7+1)*Math.cos(i*.3))),d:`${(i%8)*.07}s`}));
+  return <div className="waveform">{bars.map((b,i)=><div key={i} className="wb" style={{height:`${b.h*100}%`,animationDelay:b.d}}/>)}</div>;
 }
 
-function SceneMock({style}){
-  const parts=Array.from({length:10},(_,i)=>({l:`${(i*17+7)%100}%`,sz:`${2+(i%3)}px`,dur:`${3+i*0.4}s`,del:`${-(i*0.5)}s`,c:style==='gaming'?'var(--cyan)':style==='anime'?'var(--purple)':style==='cinematic'?'var(--orange)':'var(--green)'}));
+function PhoneScene({style}){
+  const pts=Array.from({length:10},(_,i)=>({l:`${(i*19+5)%100}%`,sz:`${2+(i%3)}px`,dur:`${4+i*.5}s`,del:`${-(i*.6)}s`,c:style==='gaming'?'var(--cyan)':style==='anime'?'var(--purple)':style==='cinematic'?'var(--orange)':'var(--green)'}));
   return(
-    <div className={`scene-bg scene-${style}`}>
-      {parts.map((p,i)=><div key={i} className="particle" style={{left:p.l,width:p.sz,height:p.sz,background:p.c,animationDuration:p.dur,animationDelay:p.del}}/>)}
+    <div className={`phone-scene sc-${style}`}>
+      {pts.map((p,i)=><div key={i} className="pt" style={{left:p.l,width:p.sz,height:p.sz,background:p.c,animationDuration:p.dur,animationDelay:p.del}}/>)}
     </div>
   );
 }
 
-function PreviewPhone({captions,captionStyle,clipStyle,watermark,progress}){
+function Phone({captions,capStyle,clipStyle,watermark,progress}){
   const [idx,setIdx]=useState(0);
-  const [key,setKey]=useState(0);
+  const [k,setK]=useState(0);
   useEffect(()=>{
     if(!captions?.length)return;
     const ni=Math.min(Math.floor(progress/100*captions.length),captions.length-1);
-    if(ni!==idx){setIdx(ni);setKey(k=>k+1);}
+    if(ni!==idx){setIdx(ni);setK(x=>x+1);}
   },[progress,captions]);
   const cap=captions?.[idx];
   return(
-    <div className="preview-wrap">
-      <SceneMock style={clipStyle||'gaming'}/>
-      <div className="preview-clip-chip">{(clipStyle||'gaming').toUpperCase()} PACK</div>
-      <div className="preview-overlay">
-        {cap&&<div key={key} className={`preview-caption style-${captionStyle||'bold'} cap-anim`} style={{textAlign:'center',marginBottom:24}}><div className="cap-text">{cap.text}</div></div>}
+    <div className="preview-phone">
+      <PhoneScene style={clipStyle||'gaming'}/>
+      <div className="phone-chip">{(clipStyle||'gaming').toUpperCase()}</div>
+      <div className="phone-overlay">
+        {cap&&<div key={k} className={`phone-cap cap-${capStyle||'bold'} cap-anim`}><div className="cap-t">{cap.text}</div></div>}
       </div>
-      {watermark&&<div className="preview-wm">WAVLR FREE</div>}
-      <div className="preview-progress"><div className="preview-progress-bar" style={{width:`${progress}%`}}/></div>
+      {watermark&&<div className="phone-wm">WAVLR FREE</div>}
+      <div className="phone-prog"><div className="phone-prog-bar" style={{width:`${progress}%`}}/></div>
     </div>
   );
 }
 
 function LoadingAnalysis(){
-  const [step,setStep]=useState(0);
-  useEffect(()=>{const t=setInterval(()=>setStep(s=>s>=LOADING_STEPS.length-1?s:s+1),700);return()=>clearInterval(t);},[]);
+  const [s,setS]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setS(x=>x>=LSTEPS.length-1?x:x+1),700);return()=>clearInterval(t);},[]);
   return(
     <div className="loading-wrap">
-      <div className="loading-icon"/>
-      <div className="loading-title">AI is analyzing your song</div>
-      <div className="loading-sub">This takes about 10–15 seconds</div>
-      <div className="loading-steps">
-        {LOADING_STEPS.map((s,i)=><div key={i} className={`loading-step ${i<step?'done':i===step?'active':''}`}><div className="ls-dot"/>{s}</div>)}
-      </div>
+      <div className="spinner"/>
+      <div className="loading-title">Analyzing your track</div>
+      <div className="loading-sub">AI is reading the DNA of your song</div>
+      <div className="lsteps">{LSTEPS.map((l,i)=><div key={i} className={`lstep ${i<s?'done':i===s?'active':''}`}><div className="ldot"/>{l}</div>)}</div>
     </div>
   );
 }
 
-/* ── AUTH SCREENS ── */
-function SignInScreen({onSwitch,onSuccess}){
+/* ── SIGN IN ── */
+function SignIn({onSwitch}){
   const [email,setEmail]=useState('');
-  const [password,setPassword]=useState('');
-  const [error,setError]=useState('');
+  const [pass,setPass]=useState('');
+  const [err,setErr]=useState('');
   const [loading,setLoading]=useState(false);
 
-  async function handleSignIn(){
-    if(!email||!password){setError('Please fill in all fields.');return;}
-    setLoading(true);setError('');
-    try{
-      const clerk=window.Clerk;
-      await clerk.signIn.create({identifier:email,password});
-      await clerk.setActive({session:clerk.signIn.createdSessionId});
-      onSuccess();
-    }catch(e){
-      setError(e.errors?.[0]?.message||'Sign in failed. Please try again.');
-    }finally{setLoading(false);}
+  async function go(){
+    if(!email||!pass){setErr('Please fill in all fields.');return;}
+    setLoading(true);setErr('');
+    const {error}=await supabase.auth.signInWithPassword({email,password:pass});
+    if(error)setErr(error.message);
+    setLoading(false);
   }
 
   return(
@@ -375,14 +353,14 @@ function SignInScreen({onSwitch,onSuccess}){
       <div className="auth-card">
         <div className="auth-logo">Wav<span>lr</span></div>
         <div className="auth-sub">Sign in to create AI music videos</div>
-        {error&&<div className="error-box">{error}</div>}
+        {err&&<div className="err-box">{err}</div>}
         <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/>
-        <input className="auth-input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)}/>
-        <button className="auth-btn auth-btn-primary" onClick={handleSignIn} disabled={loading}>{loading?'Signing in...':'Sign In'}</button>
+        <input className="auth-input" type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)}/>
+        <button className="auth-btn auth-btn-primary" onClick={go} disabled={loading}>{loading?'Signing in...':'Sign In'}</button>
         <div className="auth-features">
-          <div className="auth-feature"><div className="auth-feature-dot"/><span>AI-powered song analysis</span></div>
-          <div className="auth-feature"><div className="auth-feature-dot"/><span>Auto-generated captions synced to your beat</span></div>
-          <div className="auth-feature"><div className="auth-feature-dot"/><span>Gaming, anime & cinematic clip styles</span></div>
+          <div className="auth-feature"><div className="auth-feature-dot"/>AI-powered song analysis</div>
+          <div className="auth-feature"><div className="auth-feature-dot"/>Auto captions synced to your beat</div>
+          <div className="auth-feature"><div className="auth-feature-dot"/>Gaming, anime & cinematic styles</div>
         </div>
         <div className="auth-switch">Don't have an account? <span onClick={onSwitch}>Sign up free</span></div>
       </div>
@@ -390,25 +368,22 @@ function SignInScreen({onSwitch,onSuccess}){
   );
 }
 
-function SignUpScreen({onSwitch,onSuccess}){
+/* ── SIGN UP ── */
+function SignUp({onSwitch}){
   const [email,setEmail]=useState('');
-  const [username,setUsername]=useState('');
-  const [password,setPassword]=useState('');
-  const [error,setError]=useState('');
+  const [pass,setPass]=useState('');
+  const [err,setErr]=useState('');
+  const [success,setSuccess]=useState(false);
   const [loading,setLoading]=useState(false);
 
-  async function handleSignUp(){
-    if(!email||!username||!password){setError('Please fill in all fields.');return;}
-    if(password.length<8){setError('Password must be at least 8 characters.');return;}
-    setLoading(true);setError('');
-    try{
-      const clerk=window.Clerk;
-      await clerk.signUp.create({emailAddress:email,username,password});
-      await clerk.signUp.prepareEmailAddressVerification({strategy:'email_code'});
-      onSuccess('verify');
-    }catch(e){
-      setError(e.errors?.[0]?.message||'Sign up failed. Please try again.');
-    }finally{setLoading(false);}
+  async function go(){
+    if(!email||!pass){setErr('Please fill in all fields.');return;}
+    if(pass.length<6){setErr('Password must be at least 6 characters.');return;}
+    setLoading(true);setErr('');
+    const {error}=await supabase.auth.signUp({email,password:pass});
+    if(error)setErr(error.message);
+    else setSuccess(true);
+    setLoading(false);
   }
 
   return(
@@ -417,62 +392,18 @@ function SignUpScreen({onSwitch,onSuccess}){
       <div className="auth-card">
         <div className="auth-logo">Wav<span>lr</span></div>
         <div className="auth-sub">Create your free account and start making videos</div>
-        {error&&<div className="error-box">{error}</div>}
-        <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/>
-        <input className="auth-input" type="text" placeholder="Username" value={username} onChange={e=>setUsername(e.target.value)}/>
-        <input className="auth-input" type="password" placeholder="Password (min 8 characters)" value={password} onChange={e=>setPassword(e.target.value)}/>
-        <button className="auth-btn auth-btn-primary" onClick={handleSignUp} disabled={loading}>{loading?'Creating account...':'Create Free Account'}</button>
-        <div style={{fontSize:12,color:'var(--muted)',marginTop:8,marginBottom:16}}>Free plan includes 2 videos per month</div>
+        {err&&<div className="err-box">{err}</div>}
+        {success?(
+          <div className="success-box">✅ Account created! Check your email to confirm your account, then sign in.</div>
+        ):(
+          <>
+            <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/>
+            <input className="auth-input" type="password" placeholder="Password (min 6 characters)" value={pass} onChange={e=>setPass(e.target.value)}/>
+            <button className="auth-btn auth-btn-primary" onClick={go} disabled={loading}>{loading?'Creating account...':'Create Free Account'}</button>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:6,marginBottom:14}}>Free plan includes 2 videos per month</div>
+          </>
+        )}
         <div className="auth-switch">Already have an account? <span onClick={onSwitch}>Sign in</span></div>
-      </div>
-    </div>
-  );
-}
-
-function VerifyScreen({onSuccess}){
-  const [code,setCode]=useState('');
-  const [error,setError]=useState('');
-  const [loading,setLoading]=useState(false);
-
-  async function handleVerify(){
-    if(!code){setError('Please enter the verification code.');return;}
-    setLoading(true);setError('');
-    try{
-      const clerk=window.Clerk;
-      const result=await clerk.signUp.attemptEmailAddressVerification({code});
-      if(result.status==='complete'){
-        await clerk.setActive({session:result.createdSessionId});
-        onSuccess();
-      }
-    }catch(e){
-      setError(e.errors?.[0]?.message||'Invalid code. Please try again.');
-    }finally{setLoading(false);}
-  }
-
-  return(
-    <div className="auth-wrap">
-      <div className="bg-grid"/><div className="bg-glow"/>
-      <div className="auth-card">
-        <div className="auth-logo">Wav<span>lr</span></div>
-        <div className="auth-sub">We sent a verification code to your email. Enter it below.</div>
-        {error&&<div className="error-box">{error}</div>}
-        <input className="auth-input" type="text" placeholder="Enter verification code" value={code} onChange={e=>setCode(e.target.value)}/>
-        <button className="auth-btn auth-btn-primary" onClick={handleVerify} disabled={loading}>{loading?'Verifying...':'Verify Email'}</button>
-      </div>
-    </div>
-  );
-}
-
-/* ── LIMIT MODAL ── */
-function LimitModal({onClose,onUpgrade}){
-  return(
-    <div className="modal-overlay">
-      <div className="modal">
-        <div className="modal-icon">🚀</div>
-        <div className="modal-title">You've hit your free limit</div>
-        <div className="modal-sub">Free plan includes 2 videos per month. Upgrade to Pro for 20 videos, no watermark, and all clip styles including anime.</div>
-        <button className="modal-btn modal-btn-primary" onClick={onUpgrade}>Upgrade to Pro — $19/mo</button>
-        <button className="modal-btn modal-btn-ghost" onClick={onClose}>Maybe later</button>
       </div>
     </div>
   );
@@ -480,19 +411,16 @@ function LimitModal({onClose,onUpgrade}){
 
 /* ── MAIN APP ── */
 function App(){
-  const [authState,setAuthState]=useState('loading');
-  const [authScreen,setAuthScreen]=useState('signin');
-  const [user,setUser]=useState(null);
+  const [session,setSession]=useState(undefined);
+  const [screen,setScreen]=useState('signin');
   const [videosUsed,setVideosUsed]=useState(0);
-  const [plan,setPlan]=useState('free');
+  const [plan]=useState('free');
   const [showLimit,setShowLimit]=useState(false);
-
   const [step,setStep]=useState(0);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState('');
   const [drag,setDrag]=useState(false);
   const fileRef=useRef();
-
   const [songFile,setSongFile]=useState(null);
   const [songTitle,setSongTitle]=useState('');
   const [artist,setArtist]=useState('');
@@ -508,56 +436,39 @@ function App(){
   const [playing,setPlaying]=useState(false);
   const [fmt,setFmt]=useState('reels');
 
-  const videoLimit=plan==='free'?FREE_LIMIT:PRO_LIMIT;
+  const limit=plan==='free'?FREE_LIMIT:PRO_LIMIT;
+  const usagePct=Math.min((videosUsed/limit)*100,100);
 
-  // Init Clerk
   useEffect(()=>{
-    async function initClerk(){
-      try{
-        const clerk=window.Clerk;
-        await clerk.load({publishableKey:window.CLERK_PUBLISHABLE_KEY});
-        if(clerk.user){
-          setUser(clerk.user);
-          setAuthState('authenticated');
-          loadUserData(clerk.user.id);
-        }else{
-          setAuthState('unauthenticated');
-        }
-        clerk.addListener(({user})=>{
-          if(user){setUser(user);setAuthState('authenticated');loadUserData(user.id);}
-          else{setUser(null);setAuthState('unauthenticated');}
-        });
-      }catch(e){
-        console.error('Clerk init failed:',e);
-        setAuthState('unauthenticated');
-      }
-    }
-    initClerk();
+    supabase.auth.getSession().then(({data:{session}})=>{
+      setSession(session);
+      if(session)loadUsage(session.user.id);
+    });
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{
+      setSession(session);
+      if(session)loadUsage(session.user.id);
+    });
+    return()=>subscription.unsubscribe();
   },[]);
 
-  function loadUserData(userId){
-    const key=`wavlr_${userId}`;
+  function loadUsage(uid){
+    const key=`wavlr_usage_${uid}`;
     const stored=localStorage.getItem(key);
     if(stored){
-      const data=JSON.parse(stored);
+      const d=JSON.parse(stored);
       const now=new Date();
-      const stored_month=new Date(data.month);
-      if(now.getMonth()===stored_month.getMonth()&&now.getFullYear()===stored_month.getFullYear()){
-        setVideosUsed(data.videosUsed||0);
-        setPlan(data.plan||'free');
+      const sm=new Date(d.month);
+      if(now.getMonth()===sm.getMonth()&&now.getFullYear()===sm.getFullYear()){
+        setVideosUsed(d.count||0);
       }else{
-        localStorage.setItem(key,JSON.stringify({videosUsed:0,plan:data.plan||'free',month:now.toISOString()}));
+        localStorage.setItem(key,JSON.stringify({count:0,month:now.toISOString()}));
         setVideosUsed(0);
       }
     }
   }
 
-  function saveUserData(newVideosUsed){
-    if(!user)return;
-    const key=`wavlr_${user.id}`;
-    const stored=localStorage.getItem(key);
-    const data=stored?JSON.parse(stored):{};
-    localStorage.setItem(key,JSON.stringify({...data,videosUsed:newVideosUsed,month:new Date().toISOString()}));
+  function saveUsage(uid,count){
+    localStorage.setItem(`wavlr_usage_${uid}`,JSON.stringify({count,month:new Date().toISOString()}));
   }
 
   useEffect(()=>{
@@ -567,20 +478,20 @@ function App(){
   },[playing]);
 
   async function signOut(){
-    await window.Clerk.signOut();
-    setUser(null);setAuthState('unauthenticated');setStep(0);
+    await supabase.auth.signOut();
+    setStep(0);setSongTitle('');setArtist('');setAnalysis(null);setCaptions([]);
   }
 
   function pickFile(f){
     if(!f)return;
-    if(!f.type.startsWith('audio/')){setError('Please upload an audio file.');return;}
+    if(!f.type.startsWith('audio/')&&!f.type.startsWith('video/')){setError('Please upload an audio or video file.');return;}
     setSongFile(f);setError('');
     if(!songTitle)setSongTitle(f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '));
   }
 
   async function analyze(){
     if(!songTitle.trim()){setError('Please enter the song title.');return;}
-    if(videosUsed>=videoLimit){setShowLimit(true);return;}
+    if(videosUsed>=limit){setShowLimit(true);return;}
     setLoading(true);setError('');
     try{
       const res=await fetch('/api/analyze',{
@@ -594,52 +505,64 @@ function App(){
       if(data.clipRecommendation)setClipStyle(data.clipRecommendation);
       if(data.captionStyle)setCapStyle(data.captionStyle);
       if(data.templateSuggestion)setTemplate(data.templateSuggestion);
-      const newCount=videosUsed+1;
-      setVideosUsed(newCount);saveUserData(newCount);
+      const nc=videosUsed+1;
+      setVideosUsed(nc);
+      if(session)saveUsage(session.user.id,nc);
       setStep(2);
     }catch(e){setError('Analysis failed: '+e.message);}
     finally{setLoading(false);}
   }
 
-  const STEPS=['Song Info','AI Analysis','Style','Preview'];
-  const usagePct=Math.min((videosUsed/videoLimit)*100,100);
+  function resetVideo(){
+    setStep(0);setAnalysis(null);setCaptions([]);setProgress(0);
+    setPlaying(false);setSongTitle('');setArtist('');setSongFile(null);
+  }
 
-  // Loading state
-  if(authState==='loading'){
+  // Loading auth
+  if(session===undefined){
     return(
       <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
         <div className="bg-grid"/>
         <div style={{textAlign:'center'}}>
-          <div className="loading-icon"/>
-          <div style={{fontFamily:'Syne,sans-serif',fontSize:20,fontWeight:700}}>Loading Wavlr...</div>
+          <div className="spinner" style={{margin:'0 auto 16px'}}/>
+          <div style={{fontFamily:'Syne,sans-serif',fontSize:18,fontWeight:700}}>Loading Wavlr...</div>
         </div>
       </div>
     );
   }
 
-  // Auth screens
-  if(authState==='unauthenticated'){
-    if(authScreen==='verify')return <VerifyScreen onSuccess={()=>setAuthState('authenticated')}/>;
-    if(authScreen==='signup')return <SignUpScreen onSwitch={()=>setAuthScreen('signin')} onSuccess={(s)=>{if(s==='verify')setAuthScreen('verify');}}/>;
-    return <SignInScreen onSwitch={()=>setAuthScreen('signup')} onSuccess={()=>setAuthState('authenticated')}/>;
+  // Not logged in
+  if(!session){
+    if(screen==='signup')return <SignUp onSwitch={()=>setScreen('signin')}/>;
+    return <SignIn onSwitch={()=>setScreen('signup')}/>;
   }
 
-  const initials=user?.username?user.username.slice(0,2).toUpperCase():user?.emailAddresses?.[0]?.emailAddress?.slice(0,2).toUpperCase()||'WV';
+  const email=session.user.email;
+  const initials=email.slice(0,2).toUpperCase();
 
   return(
     <div>
       <div className="bg-grid"/><div className="bg-glow"/>
-      {showLimit&&<LimitModal onClose={()=>setShowLimit(false)} onUpgrade={()=>{setShowLimit(false);alert('Stripe payments coming soon! Week 3 feature.');}}/>}
+      {showLimit&&(
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-icon">🚀</div>
+            <div className="modal-title">You've hit your free limit</div>
+            <div className="modal-sub">Free plan includes 2 videos per month. Upgrade to Pro for 20 videos, no watermark, and all clip styles.</div>
+            <button className="modal-btn modal-primary" onClick={()=>{setShowLimit(false);alert('Stripe payments coming soon!');}}>Upgrade to Pro — $19/mo</button>
+            <button className="modal-btn modal-ghost" onClick={()=>setShowLimit(false)}>Maybe later</button>
+          </div>
+        </div>
+      )}
 
-      {/* NAV */}
       <nav className="nav">
         <div className="logo syne">Wav<span>lr</span></div>
         <div className="nav-right">
           <div className="nav-badge mono">{plan.toUpperCase()} PLAN</div>
-          {plan==='free'&&<button className="upgrade-btn">Upgrade</button>}
-          <div className="nav-user">
+          {plan==='free'&&<button className="upgrade-nav-btn" onClick={()=>alert('Stripe coming soon!')}>Upgrade</button>}
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
             <div className="nav-avatar">{initials}</div>
-            <div className="nav-username">@{user?.username||'user'}</div>
+            <div className="nav-email">{email}</div>
             <button className="signout-btn" onClick={signOut}>Sign out</button>
           </div>
         </div>
@@ -648,74 +571,67 @@ function App(){
       <div className="main">
         <div className="content slide-in" key={step}>
 
-          {/* DASHBOARD — step 0 */}
+          {/* DASHBOARD */}
           {step===0&&(
             <>
-              <div className="page-title syne">Welcome back{user?.username?`, ${user.username}`:''} 👋</div>
-              <div className="page-sub">Ready to create your next music video?</div>
-
-              {/* Plan banner */}
+              <div className="page-title syne">Welcome back 👋</div>
+              <div className="page-sub">Ready to create your next AI music video?</div>
               <div className={`plan-banner ${plan}`}>
                 <div>
-                  <div className={`plan-name ${plan}`}>{plan==='free'?'Free Plan':'Pro Plan'}</div>
-                  <div className="plan-desc">{plan==='free'?'2 videos per month · Watermark · Gaming & Stock clips':'20 videos per month · No watermark · All clip styles'}</div>
+                  <div className="plan-name">{plan==='free'?'Free Plan':'Pro Plan'}</div>
+                  <div className="plan-desc">{plan==='free'?'2 videos/month · Watermark · Gaming & Stock clips':'20 videos/month · No watermark · All clip styles'}</div>
                 </div>
-                {plan==='free'&&<button className="plan-upgrade" onClick={()=>alert('Stripe coming in Week 3!')}>Upgrade to Pro →</button>}
+                {plan==='free'&&<button className="plan-upgrade-btn" onClick={()=>alert('Stripe coming soon!')}>Upgrade to Pro →</button>}
               </div>
-
-              {/* Usage */}
               <div className="usage-grid">
                 <div className="usage-card">
                   <div className="usage-label">Videos this month</div>
                   <div className="usage-val">{videosUsed}</div>
-                  <div className="usage-max">of {videoLimit} {plan==='free'?'free':''} videos</div>
-                  <div className="usage-bar"><div className={`usage-bar-fill ${usagePct>=100?'full':usagePct>=75?'warning':''}`} style={{width:`${usagePct}%`}}/></div>
+                  <div className="usage-max">of {limit} videos</div>
+                  <div className="usage-bar"><div className={`usage-fill ${usagePct>=100?'full':usagePct>=75?'warn':''}`} style={{width:`${usagePct}%`}}/></div>
                 </div>
                 <div className="usage-card">
-                  <div className="usage-label">Plan</div>
+                  <div className="usage-label">Remaining</div>
+                  <div className="usage-val" style={{color:limit-videosUsed===0?'#ff4444':limit-videosUsed<=1?'var(--orange)':'var(--cyan)'}}>{Math.max(0,limit-videosUsed)}</div>
+                  <div className="usage-max">videos left</div>
+                </div>
+                <div className="usage-card">
+                  <div className="usage-label">Current Plan</div>
                   <div className="usage-val" style={{fontSize:18,textTransform:'capitalize'}}>{plan}</div>
-                  <div className="usage-max">{plan==='free'?'Upgrade for more videos':'Full access'}}</div>
-                </div>
-                <div className="usage-card">
-                  <div className="usage-label">Videos remaining</div>
-                  <div className="usage-val" style={{color:videoLimit-videosUsed===0?'#ff4444':videoLimit-videosUsed<=1?'var(--orange)':'var(--cyan)'}}>{Math.max(0,videoLimit-videosUsed)}</div>
-                  <div className="usage-max">this month</div>
+                  <div className="usage-max">{plan==='free'?'Upgrade for more':'Full access'}</div>
                 </div>
               </div>
-
-              <button className="btn btn-primary" style={{fontSize:16,padding:'14px 32px'}} onClick={()=>setStep(1)}>
-                + Create New Video
-              </button>
+              <button className="create-btn" onClick={()=>setStep(1)}>+ Create New Video</button>
             </>
           )}
 
-          {/* STEP 1 */}
+          {/* STEP 1 — SONG INFO */}
           {step===1&&(
             <>
               <div className="page-title syne">Drop your track.</div>
-              <div className="page-sub">Wavlr reads your song and builds a full video plan in seconds.</div>
-              {error&&<div style={{background:'#ff444420',border:'1px solid #ff444440',borderRadius:8,padding:'12px 16px',fontSize:13,color:'#ff7777',marginBottom:16}}>{error}</div>}
+              <div className="page-sub">Upload your MP3, MP4, or type in a song name. AI does the rest.</div>
+              {error&&<div className="err-box" style={{marginBottom:16}}>{error}</div>}
 
               {!songFile?(
                 <div className={`upload-zone ${drag?'drag':''}`} onClick={()=>fileRef.current.click()} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);pickFile(e.dataTransfer.files[0])}}>
-                  <input type="file" ref={fileRef} accept="audio/*" style={{display:'none'}} onChange={e=>pickFile(e.target.files[0])}/>
+                  <input type="file" ref={fileRef} accept="audio/*,video/*" style={{display:'none'}} onChange={e=>pickFile(e.target.files[0])}/>
                   <div className="upload-icon">🎵</div>
-                  <div className="upload-title syne">Upload your song</div>
-                  <div className="upload-sub">MP3 · WAV · M4A · FLAC — up to 50MB</div>
-                  <div className="upload-btn-pill">Browse files</div>
-                  <div style={{marginTop:12,fontSize:12,color:'var(--muted)'}}>or fill in details below without uploading</div>
+                  <div className="upload-title syne">Upload your song or video</div>
+                  <div className="upload-sub">MP3 · WAV · M4A · MP4 — up to 50MB</div>
+                  <div className="browse-pill">Browse files</div>
+                  <div className="upload-or">or fill in the details below without uploading</div>
                 </div>
               ):(
                 <div className="song-chip">
-                  <div className="song-chip-icon">🎵</div>
-                  <div><div className="song-chip-name">{songFile.name}</div><div className="song-chip-dur mono">{(songFile.size/1024/1024).toFixed(1)} MB</div></div>
+                  <div className="song-icon">{songFile.type.startsWith('video/')?'🎬':'🎵'}</div>
+                  <div><div className="song-name">{songFile.name}</div><div className="song-size">{(songFile.size/1024/1024).toFixed(1)} MB</div></div>
                   <Waveform/>
-                  <button className="song-chip-remove" onClick={()=>setSongFile(null)}>×</button>
+                  <button className="song-remove" onClick={()=>setSongFile(null)}>×</button>
                 </div>
               )}
 
               <div style={{marginTop:24}}>
-                <div className="card-label">Song Details</div>
+                <div className="section-label">Song Details</div>
                 <div className="form-grid" style={{marginBottom:14}}>
                   <div className="field"><label>Song Title *</label><input value={songTitle} onChange={e=>setSongTitle(e.target.value)} placeholder="e.g. No Days Off"/></div>
                   <div className="field"><label>Artist Name</label><input value={artist} onChange={e=>setArtist(e.target.value)} placeholder="e.g. Lil Persistence"/></div>
@@ -735,14 +651,14 @@ function App(){
                     </select>
                   </div>
                 </div>
-                <div className="field"><label>Paste lyrics or describe the song (improves AI output)</label>
-                  <textarea value={lyrics} onChange={e=>setLyrics(e.target.value)} placeholder="Paste a hook, verse, or describe: 'dark trap beat about grinding...'"/>
+                <div className="field"><label>Lyrics or description (improves AI accuracy)</label>
+                  <textarea value={lyrics} onChange={e=>setLyrics(e.target.value)} placeholder="Paste a hook, verse, or describe: 'dark trap beat about grinding and making it out...'"/>
                 </div>
               </div>
 
-              <div style={{background:'#ff6b3510',border:'1px solid #ff6b3525',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginTop:16,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <span>Videos used this month: <strong style={{color:'var(--text)'}}>{videosUsed} / {videoLimit}</strong></span>
-                {plan==='free'&&<span style={{color:'var(--orange)'}}>Free plan</span>}
+              <div style={{background:'#ffffff06',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted)',marginTop:16,display:'flex',justifyContent:'space-between'}}>
+                <span>Videos used: <strong style={{color:'var(--text)'}}>{videosUsed} / {limit}</strong></span>
+                {plan==='free'&&videosUsed>=limit&&<span style={{color:'#ff4444'}}>Limit reached — upgrade to continue</span>}
               </div>
 
               <div className="btn-row">
@@ -755,39 +671,39 @@ function App(){
             </>
           )}
 
-          {/* STEP 2 */}
+          {/* STEP 2 — ANALYSIS */}
           {step===2&&analysis&&(
             <>
               <div className="page-title syne">Analysis complete.</div>
-              <div className="page-sub">Here's what the AI found in <strong style={{color:'var(--text)'}}>{songTitle}</strong>.</div>
-              <div className="analysis-grid">
-                <div className="metric-chip"><div className="metric-val mono">{analysis.bpm}</div><div className="metric-label">BPM</div></div>
-                <div className="metric-chip"><div className="metric-val mono" style={{fontSize:16}}>{analysis.key}</div><div className="metric-label">Key</div></div>
-                <div className="metric-chip"><div className="metric-val mono" style={{fontSize:16,color:analysis.energy==='High'?'var(--orange)':'var(--cyan)'}}>{analysis.energy}</div><div className="metric-label">Energy</div></div>
+              <div className="page-sub">Here's what the AI found in <strong style={{color:'var(--text)'}}>{songTitle}</strong>. Edit anything below.</div>
+              <div className="metrics-row">
+                <div className="metric"><div className="metric-val">{analysis.bpm}</div><div className="metric-lbl">BPM</div></div>
+                <div className="metric"><div className="metric-val" style={{fontSize:18}}>{analysis.key}</div><div className="metric-lbl">Key</div></div>
+                <div className="metric"><div className="metric-val" style={{fontSize:18,color:analysis.energy==='High'?'var(--orange)':'var(--cyan)'}}>{analysis.energy}</div><div className="metric-lbl">Energy</div></div>
               </div>
-              <div className="mood-bar">
-                <div className="card-label">Mood & Themes</div>
-                <div className="mood-tags">
-                  <div className="mood-tag energy">{analysis.primaryMood}</div>
-                  {(analysis.themes||[]).map((t,i)=><div key={i} className="mood-tag theme">{t}</div>)}
-                  {(analysis.vibes||[]).map((v,i)=><div key={i} className="mood-tag vibe">{v}</div>)}
+              <div className="gcard">
+                <div className="section-label">Mood & Themes</div>
+                <div className="tags">
+                  <div className="tag tag-e">{analysis.primaryMood}</div>
+                  {(analysis.themes||[]).map((t,i)=><div key={i} className="tag tag-t">{t}</div>)}
+                  {(analysis.vibes||[]).map((v,i)=><div key={i} className="tag tag-v">{v}</div>)}
                 </div>
               </div>
-              <div className="card">
-                <div className="card-label">Generated Captions — click to edit</div>
+              <div className="gcard">
+                <div className="section-label">Generated Captions — click to edit</div>
                 {captions.map((c,i)=>(
-                  <div key={i} className="cap-edit-row">
-                    <div className="cap-edit-time">{c.time}</div>
-                    <input className="cap-edit-input" value={c.text} onChange={e=>setCaptions(cs=>cs.map((x,j)=>j===i?{...x,text:e.target.value}:x))}/>
-                    <div style={{fontSize:10,fontFamily:'DM Mono',color:'var(--muted)',minWidth:44}}>{c.type}</div>
+                  <div key={i} className="cap-row">
+                    <div className="cap-time">{c.time}</div>
+                    <input className="cap-input" value={c.text} onChange={e=>setCaptions(cs=>cs.map((x,j)=>j===i?{...x,text:e.target.value}:x))}/>
+                    <div className="cap-type">{c.type}</div>
                     <button className="cap-del" onClick={()=>setCaptions(cs=>cs.filter((_,j)=>j!==i))}>×</button>
                   </div>
                 ))}
               </div>
               {analysis.socialHook&&(
                 <div className="social-card">
-                  <div className="card-label">Social Caption</div>
-                  <div className="social-hook">"{analysis.socialHook}"</div>
+                  <div className="section-label">Social Caption</div>
+                  <div className="social-quote">"{analysis.socialHook}"</div>
                   <div className="hashtags">{(analysis.hashtags||[]).join(' ')}</div>
                 </div>
               )}
@@ -799,44 +715,44 @@ function App(){
             </>
           )}
 
-          {/* STEP 3 */}
+          {/* STEP 3 — STYLE */}
           {step===3&&(
             <>
               <div className="page-title syne">Style your video.</div>
               <div className="page-sub">Pick your clip style, caption look, and template.</div>
               {plan==='free'&&(
-                <div className="tier-banner">
-                  <div className="tier-text"><strong>Free Plan:</strong> Gaming, Cinematic & Stock clips available. Anime requires Pro.</div>
-                  <button className="tier-upgrade" onClick={()=>alert('Stripe coming in Week 3!')}>Upgrade</button>
+                <div className="tier-ban">
+                  <div className="tier-txt"><strong>Free Plan:</strong> Gaming, Cinematic & Stock available. Anime requires Pro.</div>
+                  <button className="tier-up" onClick={()=>alert('Stripe coming soon!')}>Upgrade</button>
                 </div>
               )}
-              <div className="card-label" style={{marginBottom:10}}>Clip Style</div>
-              <div className="style-grid" style={{marginBottom:24}}>
+              <div className="section-label" style={{marginBottom:10}}>Clip Style</div>
+              <div className="style-grid">
                 {CLIP_STYLES.map(s=>(
-                  <div key={s.id} className={`style-card ${clipStyle===s.id?'selected':''}`} onClick={()=>{if(s.free||plan!=='free')setClipStyle(s.id);}} style={!s.free&&plan==='free'?{opacity:.5,cursor:'not-allowed'}:{}}>
-                    {!s.free&&plan==='free'&&<div className="pro-badge">PRO</div>}
-                    <div className="style-card-icon">{s.icon}</div>
-                    <div className="style-card-name syne">{s.name}</div>
-                    <div className="style-card-desc">{s.desc}</div>
-                    <div className="style-card-tags">{s.tags.map(t=><div key={t} className="stag">{t}</div>)}</div>
+                  <div key={s.id} className={`scard ${clipStyle===s.id?'sel':''}`} onClick={()=>{if(s.free||plan!=='free')setClipStyle(s.id);}} style={!s.free&&plan==='free'?{opacity:.5,cursor:'not-allowed'}:{}}>
+                    {!s.free&&plan==='free'&&<div className="pro-pill">PRO</div>}
+                    <div className="scard-icon">{s.icon}</div>
+                    <div className="scard-name">{s.name}</div>
+                    <div className="scard-desc">{s.desc}</div>
+                    <div className="scard-tags">{s.tags.map(t=><div key={t} className="stag">{t}</div>)}</div>
                   </div>
                 ))}
               </div>
-              <div className="card-label" style={{marginBottom:10}}>Caption Style</div>
+              <div className="section-label" style={{marginBottom:10}}>Caption Style</div>
               <div className="cap-style-row">
                 {CAP_STYLES.map(cs=>(
-                  <div key={cs.id} className={`cpill ${capStyle===cs.id?'selected':''}`} onClick={()=>setCapStyle(cs.id)}>
+                  <div key={cs.id} className={`cpill ${capStyle===cs.id?'sel':''}`} onClick={()=>setCapStyle(cs.id)}>
                     <div className="cpill-name">{cs.name}</div>
                     <div className="cpill-desc">{cs.desc}</div>
                   </div>
                 ))}
               </div>
-              <div className="card-label" style={{marginBottom:10}}>Template</div>
-              <div className="template-row" style={{marginBottom:24}}>
+              <div className="section-label" style={{marginBottom:10}}>Template</div>
+              <div className="tpl-row">
                 {TEMPLATES.map(t=>(
-                  <div key={t.id} className={`template-thumb ${template===t.id?'selected':''}`} onClick={()=>setTemplate(t.id)}>
-                    <div className="template-thumb-inner" style={{background:template===t.id?'#00e5ff12':'var(--card2)'}}>{t.icon}</div>
-                    <div className="template-thumb-label">{t.label}</div>
+                  <div key={t.id} className={`tpl ${template===t.id?'sel':''}`} onClick={()=>setTemplate(t.id)}>
+                    <div className="tpl-inner">{t.icon}</div>
+                    <div className="tpl-label">{t.label}</div>
                   </div>
                 ))}
               </div>
@@ -847,51 +763,49 @@ function App(){
             </>
           )}
 
-          {/* STEP 4 */}
+          {/* STEP 4 — PREVIEW */}
           {step===4&&(
             <>
               <div className="page-title syne">Your video is ready.</div>
               <div className="page-sub">Preview and export to your platform.</div>
               <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:28,alignItems:'start'}}>
                 <div>
-                  <PreviewPhone captions={captions} captionStyle={capStyle} clipStyle={clipStyle} watermark={plan==='free'} progress={progress}/>
+                  <Phone captions={captions} capStyle={capStyle} clipStyle={clipStyle} watermark={plan==='free'} progress={progress}/>
                   <div style={{display:'flex',gap:8,marginTop:12}}>
-                    <button onClick={()=>{if(progress>=100)setProgress(0);setPlaying(p=>!p);}} style={{flex:1,padding:'9px',background:'var(--cyan)',border:'none',borderRadius:8,fontWeight:700,fontSize:13,cursor:'pointer',color:'#000',fontFamily:'Syne,sans-serif'}}>
+                    <button onClick={()=>{if(progress>=100)setProgress(0);setPlaying(p=>!p);}} style={{flex:1,padding:'10px',background:'var(--cyan)',border:'none',borderRadius:8,fontWeight:700,fontSize:13,cursor:'pointer',color:'#000',fontFamily:'Syne,sans-serif'}}>
                       {playing?'⏸ Pause':progress>=100?'↺ Replay':'▶ Play'}
                     </button>
-                    <button onClick={()=>{setProgress(0);setPlaying(false);}} style={{padding:'9px 14px',background:'var(--card2)',border:'1px solid var(--border2)',borderRadius:8,color:'var(--muted2)',cursor:'pointer',fontSize:13}}>↺</button>
+                    <button onClick={()=>{setProgress(0);setPlaying(false);}} style={{padding:'10px 14px',background:'var(--card2)',border:'1px solid var(--border2)',borderRadius:8,color:'var(--muted2)',cursor:'pointer',fontSize:13}}>↺</button>
                   </div>
-                  {plan==='free'&&<div style={{marginTop:8,textAlign:'center',fontSize:11,color:'var(--orange)',fontFamily:'DM Mono,monospace'}}>⚠ Watermark on free plan</div>}
+                  {plan==='free'&&<div style={{textAlign:'center',fontSize:11,color:'var(--orange)',fontFamily:'DM Mono,monospace',marginTop:8}}>⚠ Watermark on free plan</div>}
                 </div>
                 <div>
-                  <div className="card" style={{marginBottom:14}}>
-                    <div className="card-label">Video Summary</div>
-                    <div className="summary-grid">
+                  <div className="gcard" style={{marginBottom:14}}>
+                    <div className="section-label">Video Summary</div>
+                    <div className="sum-grid">
                       {[['Song',songTitle||'—'],['Artist',artist||'—'],['Style',clipStyle],['Captions',capStyle],['BPM',analysis?.bpm||'—'],['Mood',analysis?.primaryMood||'—']].map(([k,v])=>(
-                        <div key={k} className="sum-item"><span className="sum-key">{k}: </span><span className="sum-val">{v}</span></div>
+                        <div key={k} className="sum-item"><span className="sum-key">{k}</span><span className="sum-val">{v}</span></div>
                       ))}
                     </div>
                   </div>
-                  <div className="card">
-                    <div className="card-label">Export Format</div>
-                    <div className="export-formats">
-                      {[{id:'reels',label:'Reels/TikTok',desc:'9:16 · 1080p'},{id:'square',label:'Square Post',desc:'1:1 · 1080p'},{id:'landscape',label:'YouTube',desc:'16:9 · 1080p'}].map(f=>(
-                        <div key={f.id} className={`format-opt ${fmt===f.id?'sel':''}`} onClick={()=>setFmt(f.id)}>
-                          <div className="fmt">{f.label}</div><div className="fmt-desc">{f.desc}</div>
+                  <div className="gcard">
+                    <div className="section-label">Export Format</div>
+                    <div className="fmt-grid">
+                      {[{id:'reels',name:'Reels/TikTok',desc:'9:16 · 1080p'},{id:'square',name:'Square Post',desc:'1:1 · 1080p'},{id:'landscape',name:'YouTube',desc:'16:9 · 1080p'}].map(f=>(
+                        <div key={f.id} className={`fmt-opt ${fmt===f.id?'sel':''}`} onClick={()=>setFmt(f.id)}>
+                          <div className="fmt-name">{f.name}</div><div className="fmt-desc">{f.desc}</div>
                         </div>
                       ))}
                     </div>
-                    {plan==='free'&&<div style={{background:'#ff6b3510',border:'1px solid #ff6b3525',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginBottom:14}}>
-                      Free plan exports at 720p with watermark. <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}} onClick={()=>alert('Stripe coming in Week 3!')}>Upgrade for 4K →</span>
+                    {plan==='free'&&<div style={{background:'#ff6b3508',border:'1px solid #ff6b3520',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginBottom:14}}>
+                      Free plan exports at 720p with watermark. <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}} onClick={()=>alert('Stripe coming soon!')}>Upgrade for 4K →</span>
                     </div>}
-                    <button className="export-btn-big" onClick={()=>alert('Real video export coming in Week 3!')}>
+                    <button className="export-big" onClick={()=>alert('Real video export coming in Week 3 with Creatomate!')}>
                       ⬇ Export {fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video
                     </button>
                     <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>Est. render ~45s · Saved to your account</div>
                   </div>
-                  <button className="btn btn-ghost" style={{marginTop:12,width:'100%'}} onClick={()=>{setStep(0);setAnalysis(null);setCaptions([]);setProgress(0);setPlaying(false);setSongTitle('');setArtist('');}}>
-                    ← Back to Dashboard
-                  </button>
+                  <button className="btn btn-ghost" style={{marginTop:12,width:'100%'}} onClick={resetVideo}>← Back to Dashboard</button>
                 </div>
               </div>
             </>
