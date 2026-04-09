@@ -49,11 +49,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .logo span{color:var(--cyan)}
 .nav-right{display:flex;align-items:center;gap:12px}
 .nav-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border2);padding:3px 10px;border-radius:20px}
+.nav-badge.pro{color:var(--cyan);border-color:#00e5ff30;background:#00e5ff08}
+.nav-badge.business{color:var(--purple);border-color:#a855f730;background:#a855f708}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000}
 .nav-email{font-size:12px;color:var(--muted2);font-family:'DM Mono',monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout-btn{padding:5px 12px;background:transparent;border:1px solid var(--border2);border-radius:6px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
 .signout-btn:hover{border-color:#ff4444;color:#ff4444}
-.upgrade-nav-btn{padding:6px 14px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer}
+.upgrade-nav-btn{padding:6px 14px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;transition:opacity .2s}
+.upgrade-nav-btn:hover{opacity:.85}
+.upgrade-nav-btn:disabled{opacity:.5;cursor:not-allowed}
 
 /* Main */
 .main{padding-top:56px;min-height:100vh;position:relative;z-index:1}
@@ -64,9 +68,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 /* Dashboard */
 .plan-banner{border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(90deg,#ffffff06,#ffffff03);border:1px solid var(--border2)}
 .plan-banner.pro{background:linear-gradient(90deg,#00e5ff10,#a855f710);border:1px solid #00e5ff30}
+.plan-banner.business{background:linear-gradient(90deg,#a855f710,#ff6b3510);border:1px solid #a855f730}
 .plan-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
 .plan-desc{font-size:13px;color:var(--muted2)}
-.plan-upgrade-btn{padding:10px 22px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap}
+.plan-upgrade-btn{padding:10px 22px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.plan-upgrade-btn:hover{opacity:.85}
+.plan-upgrade-btn:disabled{opacity:.5;cursor:not-allowed}
 .usage-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
 .usage-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
 .usage-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
@@ -78,6 +85,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .usage-fill.full{background:#ff4444}
 .create-btn{padding:14px 32px;background:var(--cyan);color:#000;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
 .create-btn:hover{background:#33ecff;transform:translateY(-1px)}
+.create-btn:disabled{background:var(--card2);color:var(--muted);cursor:not-allowed;transform:none}
 
 /* Upload zone */
 .upload-zone{border:1.5px dashed var(--border2);border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface)}
@@ -174,7 +182,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .tier-ban{background:linear-gradient(90deg,#ff6b3510,#a855f710);border:1px solid #ff6b3530;border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
 .tier-txt{font-size:13px;color:var(--muted2)}
 .tier-txt strong{color:var(--text)}
-.tier-up{padding:7px 16px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace}
+.tier-up{padding:7px 16px;background:linear-gradient(90deg,var(--orange),var(--purple));border:none;border-radius:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:'DM Mono',monospace;transition:opacity .2s}
+.tier-up:hover{opacity:.85}
+.tier-up:disabled{opacity:.5;cursor:not-allowed}
 
 /* Preview */
 .preview-phone{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:9/16;max-width:240px;margin:0 auto;border:1px solid var(--border2)}
@@ -206,6 +216,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .fmt-desc{font-size:11px;color:var(--muted);margin-top:3px}
 .export-big{width:100%;padding:14px;background:var(--cyan);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
 .export-big:hover{background:#33ecff;transform:translateY(-1px)}
+.export-big:disabled{background:var(--card2);color:var(--muted);cursor:not-allowed;transform:none}
 
 /* Social */
 .social-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:12px}
@@ -222,13 +233,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 /* Limit modal */
 .modal-overlay{position:fixed;inset:0;background:#000000aa;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
-.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:32px;max-width:400px;width:100%;text-align:center}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:32px;max-width:440px;width:100%;text-align:center}
 .modal-icon{font-size:40px;margin-bottom:16px}
 .modal-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
 .modal-sub{font-size:14px;color:var(--muted2);margin-bottom:24px;line-height:1.6}
-.modal-btn{width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif;margin-bottom:10px}
+.modal-btn{width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif;margin-bottom:10px;transition:all .2s}
 .modal-primary{background:linear-gradient(90deg,var(--orange),var(--purple));color:#fff}
+.modal-primary:hover{opacity:.9}
+.modal-primary:disabled{opacity:.5;cursor:not-allowed}
 .modal-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+.modal-ghost:hover{border-color:var(--text);color:var(--text)}
+
+/* Upgrade plan cards inside modal */
+.plan-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;text-align:left}
+.plan-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;padding:16px;cursor:pointer;transition:all .2s}
+.plan-card:hover{border-color:var(--cyan)}
+.plan-card.featured{border-color:var(--cyan);background:#00e5ff06}
+.plan-card-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;margin-bottom:2px}
+.plan-card-price{font-family:'DM Mono',monospace;font-size:13px;color:var(--cyan);margin-bottom:8px}
+.plan-card-feat{font-size:11px;color:var(--muted2);line-height:1.7}
 
 /* Loading */
 .loading-wrap{text-align:center;padding:48px 0}
@@ -240,6 +263,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .lstep{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
 .lstep.done{color:var(--green)}.lstep.active{color:var(--cyan)}
 .ldot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--text);z-index:300;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px #00000060;animation:toastIn .25s ease}
+.toast.success{border-color:#22d3a040}
+.toast.error{border-color:#ff444440;color:#ff7777}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .pulse{animation:pulse 1.5s ease-in-out infinite}
@@ -253,14 +282,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useEffect,useRef}=React;
+const {useState,useEffect,useRef,useCallback}=React;
 
 const SUPABASE_URL='https://oyutrbtaxqpxadyvhktc.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_DR3eM1Pp07AM2wiZsyt-ZQ_Gjc3pgM0';
 const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const FREE_LIMIT=2;
-const PRO_LIMIT=20;
+const PLAN_LIMITS={free:2,pro:20,business:999999};
 
 const CLIP_STYLES=[
   {id:'gaming',icon:'🎮',name:'Gaming',desc:'Beat-synced kills and clutch moments matched to your drop',tags:['Hype','Action'],free:true},
@@ -283,6 +311,7 @@ const TEMPLATES=[
 ];
 const LSTEPS=['Analyzing song structure...','Detecting mood & BPM...','Generating caption timing...','Matching clip themes...','Building video plan...'];
 
+/* ── HELPERS ── */
 function Waveform(){
   const bars=Array.from({length:44},(_,i)=>({h:Math.max(0.15,Math.abs(Math.sin(i*.7+1)*Math.cos(i*.3))),d:`${(i%8)*.07}s`}));
   return <div className="waveform">{bars.map((b,i)=><div key={i} className="wb" style={{height:`${b.h*100}%`,animationDelay:b.d}}/>)}</div>;
@@ -332,13 +361,17 @@ function LoadingAnalysis(){
   );
 }
 
+function Toast({msg,type,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,3200);return()=>clearTimeout(t);},[]);
+  return <div className={`toast ${type}`}>{type==='success'?'✓':type==='error'?'✕':'ℹ'} {msg}</div>;
+}
+
 /* ── SIGN IN ── */
 function SignIn({onSwitch}){
   const [email,setEmail]=useState('');
   const [pass,setPass]=useState('');
   const [err,setErr]=useState('');
   const [loading,setLoading]=useState(false);
-
   async function go(){
     if(!email||!pass){setErr('Please fill in all fields.');return;}
     setLoading(true);setErr('');
@@ -346,7 +379,6 @@ function SignIn({onSwitch}){
     if(error)setErr(error.message);
     setLoading(false);
   }
-
   return(
     <div className="auth-wrap">
       <div className="bg-grid"/><div className="bg-glow"/>
@@ -354,8 +386,8 @@ function SignIn({onSwitch}){
         <div className="auth-logo">Wav<span>lr</span></div>
         <div className="auth-sub">Sign in to create AI music videos</div>
         {err&&<div className="err-box">{err}</div>}
-        <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/>
-        <input className="auth-input" type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)}/>
+        <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/>
+        <input className="auth-input" type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/>
         <button className="auth-btn auth-btn-primary" onClick={go} disabled={loading}>{loading?'Signing in...':'Sign In'}</button>
         <div className="auth-features">
           <div className="auth-feature"><div className="auth-feature-dot"/>AI-powered song analysis</div>
@@ -375,7 +407,6 @@ function SignUp({onSwitch}){
   const [err,setErr]=useState('');
   const [success,setSuccess]=useState(false);
   const [loading,setLoading]=useState(false);
-
   async function go(){
     if(!email||!pass){setErr('Please fill in all fields.');return;}
     if(pass.length<6){setErr('Password must be at least 6 characters.');return;}
@@ -385,7 +416,6 @@ function SignUp({onSwitch}){
     else setSuccess(true);
     setLoading(false);
   }
-
   return(
     <div className="auth-wrap">
       <div className="bg-grid"/><div className="bg-glow"/>
@@ -394,16 +424,45 @@ function SignUp({onSwitch}){
         <div className="auth-sub">Create your free account and start making videos</div>
         {err&&<div className="err-box">{err}</div>}
         {success?(
-          <div className="success-box">✅ Account created! Check your email to confirm your account, then sign in.</div>
+          <div className="success-box">✅ Account created! Check your email to confirm, then sign in.</div>
         ):(
           <>
             <input className="auth-input" type="email" placeholder="Email address" value={email} onChange={e=>setEmail(e.target.value)}/>
-            <input className="auth-input" type="password" placeholder="Password (min 6 characters)" value={pass} onChange={e=>setPass(e.target.value)}/>
+            <input className="auth-input" type="password" placeholder="Password (min 6 characters)" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/>
             <button className="auth-btn auth-btn-primary" onClick={go} disabled={loading}>{loading?'Creating account...':'Create Free Account'}</button>
-            <div style={{fontSize:12,color:'var(--muted)',marginTop:6,marginBottom:14}}>Free plan includes 2 videos per month</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:6,marginBottom:14}}>Free plan: 2 videos/month · no credit card needed</div>
           </>
         )}
         <div className="auth-switch">Already have an account? <span onClick={onSwitch}>Sign in</span></div>
+      </div>
+    </div>
+  );
+}
+
+/* ── UPGRADE MODAL ── */
+function UpgradeModal({onClose,onUpgrade,checkoutLoading,reason}){
+  return(
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-icon">🚀</div>
+        <div className="modal-title">{reason==='limit'?'You\'ve hit your free limit':'Unlock the full experience'}</div>
+        <div className="modal-sub">{reason==='limit'?'Free plan includes 2 videos per month.':'Get more videos, remove the watermark, and unlock all clip styles.'}</div>
+        <div className="plan-cards">
+          <div className="plan-card featured" onClick={()=>onUpgrade('pro')}>
+            <div className="plan-card-name">Pro</div>
+            <div className="plan-card-price">$19 / month</div>
+            <div className="plan-card-feat">20 videos/mo<br/>No watermark<br/>All clip styles<br/>1080p export</div>
+          </div>
+          <div className="plan-card" onClick={()=>onUpgrade('business')}>
+            <div className="plan-card-name">Business</div>
+            <div className="plan-card-price">$49 / month</div>
+            <div className="plan-card-feat">Unlimited videos<br/>No watermark<br/>Custom templates<br/>4K export</div>
+          </div>
+        </div>
+        <button className="modal-btn modal-primary" onClick={()=>onUpgrade('pro')} disabled={checkoutLoading}>
+          {checkoutLoading?'Redirecting...':'Upgrade to Pro — $19/mo'}
+        </button>
+        <button className="modal-btn modal-ghost" onClick={onClose}>Maybe later</button>
       </div>
     </div>
   );
@@ -413,13 +472,18 @@ function SignUp({onSwitch}){
 function App(){
   const [session,setSession]=useState(undefined);
   const [screen,setScreen]=useState('signin');
+  const [plan,setPlan]=useState('free');
   const [videosUsed,setVideosUsed]=useState(0);
-  const [plan]=useState('free');
-  const [showLimit,setShowLimit]=useState(false);
+  const [usageLoaded,setUsageLoaded]=useState(false);
+  const [showUpgrade,setShowUpgrade]=useState(false);
+  const [upgradeReason,setUpgradeReason]=useState('limit');
+  const [checkoutLoading,setCheckoutLoading]=useState(false);
   const [step,setStep]=useState(0);
   const [loading,setLoading]=useState(false);
+  const [exportLoading,setExportLoading]=useState(false);
   const [error,setError]=useState('');
   const [drag,setDrag]=useState(false);
+  const [toast,setToast]=useState(null);
   const fileRef=useRef();
   const [songFile,setSongFile]=useState(null);
   const [songTitle,setSongTitle]=useState('');
@@ -436,40 +500,62 @@ function App(){
   const [playing,setPlaying]=useState(false);
   const [fmt,setFmt]=useState('reels');
 
-  const limit=plan==='free'?FREE_LIMIT:PRO_LIMIT;
+  const limit=PLAN_LIMITS[plan]||2;
   const usagePct=Math.min((videosUsed/limit)*100,100);
+  const isUnlimited=plan==='business';
+
+  function showToast(msg,type='success'){setToast({msg,type});}
+
+  /* ── Load usage + plan from Supabase ── */
+  async function loadUsage(uid){
+    try{
+      const res=await fetch(`/api/usage?user_id=${uid}`);
+      if(res.ok){
+        const d=await res.json();
+        setPlan(d.plan||'free');
+        setVideosUsed(d.count||0);
+      }
+    }catch(e){
+      // fallback to localStorage if API fails
+      const key=`wavlr_usage_${uid}`;
+      const stored=localStorage.getItem(key);
+      if(stored){
+        const d=JSON.parse(stored);
+        const now=new Date();
+        const sm=new Date(d.month);
+        if(now.getMonth()===sm.getMonth()&&now.getFullYear()===sm.getFullYear()){
+          setVideosUsed(d.count||0);
+        }
+      }
+    }finally{
+      setUsageLoaded(true);
+    }
+  }
 
   useEffect(()=>{
+    // Check for upgrade success/cancel in URL
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('upgrade')==='success'){
+      showToast('🎉 Welcome to Pro! Your plan has been upgraded.','success');
+      window.history.replaceState({},'','/');
+    }
+    if(params.get('upgrade')==='cancelled'){
+      showToast('Upgrade cancelled — you can upgrade anytime.','');
+      window.history.replaceState({},'','/');
+    }
+
     supabase.auth.getSession().then(({data:{session}})=>{
       setSession(session);
       if(session)loadUsage(session.user.id);
+      else setUsageLoaded(true);
     });
     const {data:{subscription}}=supabase.auth.onAuthStateChange((_,session)=>{
       setSession(session);
       if(session)loadUsage(session.user.id);
+      else setUsageLoaded(true);
     });
     return()=>subscription.unsubscribe();
   },[]);
-
-  function loadUsage(uid){
-    const key=`wavlr_usage_${uid}`;
-    const stored=localStorage.getItem(key);
-    if(stored){
-      const d=JSON.parse(stored);
-      const now=new Date();
-      const sm=new Date(d.month);
-      if(now.getMonth()===sm.getMonth()&&now.getFullYear()===sm.getFullYear()){
-        setVideosUsed(d.count||0);
-      }else{
-        localStorage.setItem(key,JSON.stringify({count:0,month:now.toISOString()}));
-        setVideosUsed(0);
-      }
-    }
-  }
-
-  function saveUsage(uid,count){
-    localStorage.setItem(`wavlr_usage_${uid}`,JSON.stringify({count,month:new Date().toISOString()}));
-  }
 
   useEffect(()=>{
     if(!playing)return;
@@ -480,6 +566,7 @@ function App(){
   async function signOut(){
     await supabase.auth.signOut();
     setStep(0);setSongTitle('');setArtist('');setAnalysis(null);setCaptions([]);
+    setPlan('free');setVideosUsed(0);setUsageLoaded(false);
   }
 
   function pickFile(f){
@@ -489,9 +576,13 @@ function App(){
     if(!songTitle)setSongTitle(f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '));
   }
 
+  /* ── Analyze — NO usage increment here ── */
   async function analyze(){
     if(!songTitle.trim()){setError('Please enter the song title.');return;}
-    if(videosUsed>=limit){setShowLimit(true);return;}
+    // Check limit before calling AI (server will enforce too, but fail fast in UI)
+    if(!isUnlimited&&videosUsed>=limit){
+      setUpgradeReason('limit');setShowUpgrade(true);return;
+    }
     setLoading(true);setError('');
     try{
       const res=await fetch('/api/analyze',{
@@ -505,13 +596,66 @@ function App(){
       if(data.clipRecommendation)setClipStyle(data.clipRecommendation);
       if(data.captionStyle)setCapStyle(data.captionStyle);
       if(data.templateSuggestion)setTemplate(data.templateSuggestion);
-      const nc=videosUsed+1;
-      setVideosUsed(nc);
-      if(session)saveUsage(session.user.id,nc);
       setStep(2);
     }catch(e){setError('Analysis failed: '+e.message);}
     finally{setLoading(false);}
   }
+
+  /* ── Export — usage increment happens here ── */
+  async function handleExport(){
+    if(!session)return;
+    setExportLoading(true);
+    try{
+      // Increment usage server-side — this is the real gate
+      const res=await fetch('/api/usage',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_id:session.user.id})
+      });
+      const data=await res.json();
+      if(res.status===403){
+        setUpgradeReason('limit');setShowUpgrade(true);setExportLoading(false);return;
+      }
+      if(!res.ok)throw new Error(data.error||'Failed to save usage');
+      setVideosUsed(data.count);
+      // TODO: Trigger real render — for now save to videos table as draft
+      await supabase.from('videos').insert({
+        user_id:session.user.id,
+        title:songTitle,artist,genre,mood,
+        analysis,captions,
+        clip_style:clipStyle,cap_style:capStyle,template,
+        export_format:fmt,
+        status:'draft',
+        watermarked:plan==='free',
+      });
+      showToast('Video saved! Real rendering coming soon.','success');
+    }catch(e){
+      showToast('Export failed: '+e.message,'error');
+    }finally{
+      setExportLoading(false);
+    }
+  }
+
+  /* ── Stripe checkout ── */
+  async function startUpgrade(selectedPlan){
+    if(!session){setShowUpgrade(false);return;}
+    setCheckoutLoading(true);
+    try{
+      const res=await fetch('/api/create-checkout',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_id:session.user.id,email:session.user.email,plan:selectedPlan})
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||'Checkout failed');
+      window.location.href=data.url;
+    }catch(e){
+      showToast('Checkout failed: '+e.message,'error');
+      setCheckoutLoading(false);
+    }
+  }
+
+  function openUpgrade(reason='general'){setUpgradeReason(reason);setShowUpgrade(true);}
 
   function resetVideo(){
     setStep(0);setAnalysis(null);setCaptions([]);setProgress(0);
@@ -519,7 +663,7 @@ function App(){
   }
 
   // Loading auth
-  if(session===undefined){
+  if(session===undefined||!usageLoaded){
     return(
       <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)'}}>
         <div className="bg-grid"/>
@@ -531,7 +675,6 @@ function App(){
     );
   }
 
-  // Not logged in
   if(!session){
     if(screen==='signup')return <SignUp onSwitch={()=>setScreen('signin')}/>;
     return <SignIn onSwitch={()=>setScreen('signup')}/>;
@@ -543,23 +686,23 @@ function App(){
   return(
     <div>
       <div className="bg-grid"/><div className="bg-glow"/>
-      {showLimit&&(
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-icon">🚀</div>
-            <div className="modal-title">You've hit your free limit</div>
-            <div className="modal-sub">Free plan includes 2 videos per month. Upgrade to Pro for 20 videos, no watermark, and all clip styles.</div>
-            <button className="modal-btn modal-primary" onClick={()=>{setShowLimit(false);alert('Stripe payments coming soon!');}}>Upgrade to Pro — $19/mo</button>
-            <button className="modal-btn modal-ghost" onClick={()=>setShowLimit(false)}>Maybe later</button>
-          </div>
-        </div>
+
+      {toast&&<Toast msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
+
+      {showUpgrade&&(
+        <UpgradeModal
+          reason={upgradeReason}
+          onClose={()=>setShowUpgrade(false)}
+          onUpgrade={startUpgrade}
+          checkoutLoading={checkoutLoading}
+        />
       )}
 
       <nav className="nav">
         <div className="logo syne">Wav<span>lr</span></div>
         <div className="nav-right">
-          <div className="nav-badge mono">{plan.toUpperCase()} PLAN</div>
-          {plan==='free'&&<button className="upgrade-nav-btn" onClick={()=>alert('Stripe coming soon!')}>Upgrade</button>}
+          <div className={`nav-badge mono ${plan}`}>{plan.toUpperCase()}</div>
+          {plan==='free'&&<button className="upgrade-nav-btn" onClick={()=>openUpgrade('general')}>Upgrade</button>}
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <div className="nav-avatar">{initials}</div>
             <div className="nav-email">{email}</div>
@@ -571,28 +714,40 @@ function App(){
       <div className="main">
         <div className="content slide-in" key={step}>
 
-          {/* DASHBOARD */}
+          {/* STEP 0 — DASHBOARD */}
           {step===0&&(
             <>
               <div className="page-title syne">Welcome back 👋</div>
               <div className="page-sub">Ready to create your next AI music video?</div>
               <div className={`plan-banner ${plan}`}>
                 <div>
-                  <div className="plan-name">{plan==='free'?'Free Plan':'Pro Plan'}</div>
-                  <div className="plan-desc">{plan==='free'?'2 videos/month · Watermark · Gaming & Stock clips':'20 videos/month · No watermark · All clip styles'}</div>
+                  <div className="plan-name">
+                    {plan==='free'?'Free Plan':plan==='pro'?'Pro Plan ✦':'Business Plan ✦'}
+                  </div>
+                  <div className="plan-desc">
+                    {plan==='free'&&'2 videos/month · Watermark · Gaming & Stock clips'}
+                    {plan==='pro'&&'20 videos/month · No watermark · All clip styles · 1080p'}
+                    {plan==='business'&&'Unlimited videos · No watermark · Custom templates · 4K'}
+                  </div>
                 </div>
-                {plan==='free'&&<button className="plan-upgrade-btn" onClick={()=>alert('Stripe coming soon!')}>Upgrade to Pro →</button>}
+                {plan==='free'&&(
+                  <button className="plan-upgrade-btn" onClick={()=>openUpgrade('general')}>Upgrade to Pro →</button>
+                )}
               </div>
               <div className="usage-grid">
                 <div className="usage-card">
                   <div className="usage-label">Videos this month</div>
                   <div className="usage-val">{videosUsed}</div>
-                  <div className="usage-max">of {limit} videos</div>
-                  <div className="usage-bar"><div className={`usage-fill ${usagePct>=100?'full':usagePct>=75?'warn':''}`} style={{width:`${usagePct}%`}}/></div>
+                  <div className="usage-max">of {isUnlimited?'∞':limit} videos</div>
+                  <div className="usage-bar">
+                    <div className={`usage-fill ${!isUnlimited&&usagePct>=100?'full':usagePct>=75?'warn':''}`} style={{width:`${isUnlimited?30:usagePct}%`}}/>
+                  </div>
                 </div>
                 <div className="usage-card">
                   <div className="usage-label">Remaining</div>
-                  <div className="usage-val" style={{color:limit-videosUsed===0?'#ff4444':limit-videosUsed<=1?'var(--orange)':'var(--cyan)'}}>{Math.max(0,limit-videosUsed)}</div>
+                  <div className="usage-val" style={{color:isUnlimited?'var(--cyan)':limit-videosUsed===0?'#ff4444':limit-videosUsed<=1?'var(--orange)':'var(--cyan)'}}>
+                    {isUnlimited?'∞':Math.max(0,limit-videosUsed)}
+                  </div>
                   <div className="usage-max">videos left</div>
                 </div>
                 <div className="usage-card">
@@ -601,7 +756,18 @@ function App(){
                   <div className="usage-max">{plan==='free'?'Upgrade for more':'Full access'}</div>
                 </div>
               </div>
-              <button className="create-btn" onClick={()=>setStep(1)}>+ Create New Video</button>
+              <button
+                className="create-btn"
+                onClick={()=>setStep(1)}
+                disabled={!isUnlimited&&videosUsed>=limit}
+              >
+                {!isUnlimited&&videosUsed>=limit?'Limit reached — upgrade to continue':'+ Create New Video'}
+              </button>
+              {!isUnlimited&&videosUsed>=limit&&(
+                <button style={{marginLeft:12,padding:'14px 24px',background:'linear-gradient(90deg,var(--orange),var(--purple))',border:'none',borderRadius:10,fontFamily:'Syne,sans-serif',fontSize:15,fontWeight:700,cursor:'pointer',color:'#fff'}} onClick={()=>openUpgrade('limit')}>
+                  Upgrade to Pro →
+                </button>
+              )}
             </>
           )}
 
@@ -611,7 +777,6 @@ function App(){
               <div className="page-title syne">Drop your track.</div>
               <div className="page-sub">Upload your MP3, MP4, or type in a song name. AI does the rest.</div>
               {error&&<div className="err-box" style={{marginBottom:16}}>{error}</div>}
-
               {!songFile?(
                 <div className={`upload-zone ${drag?'drag':''}`} onClick={()=>fileRef.current.click()} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);pickFile(e.dataTransfer.files[0])}}>
                   <input type="file" ref={fileRef} accept="audio/*,video/*" style={{display:'none'}} onChange={e=>pickFile(e.target.files[0])}/>
@@ -629,7 +794,6 @@ function App(){
                   <button className="song-remove" onClick={()=>setSongFile(null)}>×</button>
                 </div>
               )}
-
               <div style={{marginTop:24}}>
                 <div className="section-label">Song Details</div>
                 <div className="form-grid" style={{marginBottom:14}}>
@@ -639,7 +803,7 @@ function App(){
                 <div className="form-grid" style={{marginBottom:14}}>
                   <div className="field"><label>Genre</label>
                     <select value={genre} onChange={e=>setGenre(e.target.value)}>
-                      <option value="hip-hop">Hip-Hop / Rap</option><option value="trap">Trap</option><option value="rnb">R&B / Soul</option>
+                      <option value="hip-hop">Hip-Hop / Rap</option><option value="trap">Trap</option><option value="rnb">R&amp;B / Soul</option>
                       <option value="pop">Pop</option><option value="edm">EDM / Electronic</option><option value="drill">Drill</option>
                       <option value="afrobeats">Afrobeats</option><option value="rock">Rock / Alt</option><option value="lo-fi">Lo-Fi / Chill</option>
                     </select>
@@ -655,12 +819,10 @@ function App(){
                   <textarea value={lyrics} onChange={e=>setLyrics(e.target.value)} placeholder="Paste a hook, verse, or describe: 'dark trap beat about grinding and making it out...'"/>
                 </div>
               </div>
-
               <div style={{background:'#ffffff06',border:'1px solid var(--border)',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted)',marginTop:16,display:'flex',justifyContent:'space-between'}}>
-                <span>Videos used: <strong style={{color:'var(--text)'}}>{videosUsed} / {limit}</strong></span>
-                {plan==='free'&&videosUsed>=limit&&<span style={{color:'#ff4444'}}>Limit reached — upgrade to continue</span>}
+                <span>Videos used this month: <strong style={{color:'var(--text)'}}>{videosUsed} / {isUnlimited?'∞':limit}</strong></span>
+                {!isUnlimited&&videosUsed>=limit&&<span style={{color:'#ff4444'}}>Limit reached — upgrade to continue</span>}
               </div>
-
               <div className="btn-row">
                 <button className="btn btn-ghost" onClick={()=>setStep(0)}>← Dashboard</button>
                 <button className="btn btn-primary" onClick={loading?undefined:analyze} disabled={loading||!songTitle.trim()}>
@@ -682,7 +844,7 @@ function App(){
                 <div className="metric"><div className="metric-val" style={{fontSize:18,color:analysis.energy==='High'?'var(--orange)':'var(--cyan)'}}>{analysis.energy}</div><div className="metric-lbl">Energy</div></div>
               </div>
               <div className="gcard">
-                <div className="section-label">Mood & Themes</div>
+                <div className="section-label">Mood &amp; Themes</div>
                 <div className="tags">
                   <div className="tag tag-e">{analysis.primaryMood}</div>
                   {(analysis.themes||[]).map((t,i)=><div key={i} className="tag tag-t">{t}</div>)}
@@ -722,14 +884,19 @@ function App(){
               <div className="page-sub">Pick your clip style, caption look, and template.</div>
               {plan==='free'&&(
                 <div className="tier-ban">
-                  <div className="tier-txt"><strong>Free Plan:</strong> Gaming, Cinematic & Stock available. Anime requires Pro.</div>
-                  <button className="tier-up" onClick={()=>alert('Stripe coming soon!')}>Upgrade</button>
+                  <div className="tier-txt"><strong>Free Plan:</strong> Gaming, Cinematic &amp; Stock available. Anime requires Pro.</div>
+                  <button className="tier-up" onClick={()=>openUpgrade('general')}>Upgrade</button>
                 </div>
               )}
               <div className="section-label" style={{marginBottom:10}}>Clip Style</div>
               <div className="style-grid">
                 {CLIP_STYLES.map(s=>(
-                  <div key={s.id} className={`scard ${clipStyle===s.id?'sel':''}`} onClick={()=>{if(s.free||plan!=='free')setClipStyle(s.id);}} style={!s.free&&plan==='free'?{opacity:.5,cursor:'not-allowed'}:{}}>
+                  <div key={s.id} className={`scard ${clipStyle===s.id?'sel':''}`}
+                    onClick={()=>{
+                      if(!s.free&&plan==='free'){openUpgrade('general');return;}
+                      setClipStyle(s.id);
+                    }}
+                    style={!s.free&&plan==='free'?{opacity:.5,cursor:'not-allowed'}:{}}>
                     {!s.free&&plan==='free'&&<div className="pro-pill">PRO</div>}
                     <div className="scard-icon">{s.icon}</div>
                     <div className="scard-name">{s.name}</div>
@@ -763,7 +930,7 @@ function App(){
             </>
           )}
 
-          {/* STEP 4 — PREVIEW */}
+          {/* STEP 4 — PREVIEW + EXPORT */}
           {step===4&&(
             <>
               <div className="page-title syne">Your video is ready.</div>
@@ -797,13 +964,18 @@ function App(){
                         </div>
                       ))}
                     </div>
-                    {plan==='free'&&<div style={{background:'#ff6b3508',border:'1px solid #ff6b3520',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginBottom:14}}>
-                      Free plan exports at 720p with watermark. <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}} onClick={()=>alert('Stripe coming soon!')}>Upgrade for 4K →</span>
-                    </div>}
-                    <button className="export-big" onClick={()=>alert('Real video export coming in Week 3 with Creatomate!')}>
-                      ⬇ Export {fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video
+                    {plan==='free'&&(
+                      <div style={{background:'#ff6b3508',border:'1px solid #ff6b3520',borderRadius:8,padding:'10px 14px',fontSize:12,color:'var(--muted2)',marginBottom:14}}>
+                        Free plan exports at 720p with watermark.{' '}
+                        <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}} onClick={()=>openUpgrade('general')}>Upgrade for 1080p →</span>
+                      </div>
+                    )}
+                    <button className="export-big" onClick={handleExport} disabled={exportLoading}>
+                      {exportLoading?'Saving...':`⬇ Export ${fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video`}
                     </button>
-                    <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>Est. render ~45s · Saved to your account</div>
+                    <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>
+                      Video saved to your account · Real rendering coming soon
+                    </div>
                   </div>
                   <button className="btn btn-ghost" style={{marginTop:12,width:'100%'}} onClick={resetVideo}>← Back to Dashboard</button>
                 </div>
