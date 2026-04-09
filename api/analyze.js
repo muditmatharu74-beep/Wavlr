@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { songTitle, artist, genre, mood, lyrics } = req.body;
-
   if (!songTitle) {
     return res.status(400).json({ error: 'Song title is required' });
   }
@@ -61,7 +59,6 @@ Make captions authentic to the song's style and themes. Keep them punchy, 2-6 wo
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       return res.status(response.status).json({ error: data.error?.message || 'API error' });
     }
@@ -69,7 +66,6 @@ Make captions authentic to the song's style and themes. Keep them punchy, 2-6 wo
     const raw = data.content.map(c => c.text || '').join('');
     const clean = raw.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-
     return res.status(200).json(parsed);
   } catch (err) {
     return res.status(500).json({ error: 'Analysis failed: ' + err.message });
