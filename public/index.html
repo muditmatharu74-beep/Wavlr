@@ -484,6 +484,7 @@ function App(){
   const [renderStatus,setRenderStatus]=useState(null);
   const [renderUrl,setRenderUrl]=useState(null);
   const [videoId,setVideoId]=useState(null);
+  const [renderProgress,setRenderProgress]=useState(0);
   const [error,setError]=useState('');
   const [drag,setDrag]=useState(false);
   const [toast,setToast]=useState(null);
@@ -630,14 +631,16 @@ function App(){
       showToast('Rendering your video... ~30 seconds','success');
       const renderId=renderData.render_id;
       let attempts=0;
+      setRenderProgress(0);
+      const progTimer=setInterval(()=>setRenderProgress(p=>p>=90?90:p+1.5),1000);
       const poll=setInterval(async()=>{
-        attempts++;
-        if(attempts>40){clearInterval(poll);setRenderStatus('failed');showToast('Render timed out','error');return;}
+      attempts++;
+      if(attempts>40){clearInterval(progTimer);clearInterval(poll);setRenderStatus('failed');showToast('Render timed out','error');return;}
         try{
           const s=await fetch('/api/render-status?render_id='+renderId+'&video_id='+videoRecord.id);
           const sd=await s.json();
-          if(sd.status==='succeeded'){clearInterval(poll);setRenderStatus('done');setRenderUrl(sd.url);showToast('Video ready! Click Download.','success');}
-          else if(sd.status==='failed'){clearInterval(poll);setRenderStatus('failed');showToast('Render failed — try again','error');}
+          if(sd.status==='succeeded'){clearInterval(poll);clearInterval(progTimer);setRenderProgress(100);setRenderStatus('done');setRenderUrl(sd.url);showToast('Video ready! Click Download.','success');}
+          else if(sd.status==='failed'){clearInterval(poll);clearInterval(progTimer);setRenderStatus('failed');showToast('Render failed — try again','error');}
         }catch(e){console.error('Poll error:',e);}
       },3000);
     }catch(e){
@@ -991,11 +994,17 @@ function App(){
                         {exportLoading?'Starting render...':renderStatus==='rendering'?'⏳ Rendering... (~30s)':renderStatus==='failed'?'↺ Try Again':`⬇ Export ${fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video`}
                       </button>
                     )}
-                    {renderStatus==='rendering'&&(
-                      <div style={{marginTop:10,fontSize:12,color:'var(--cyan)',fontFamily:'DM Mono,monospace',textAlign:'center'}}>
-                        🎬 Rendering your video... hang tight
-                      </div>
-                    )}
+                   {renderStatus==='rendering'&&(
+                     <div style={{marginTop:10}}>
+                    <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',marginBottom:6}}>
+                      <span>🎬 Rendering your video...</span>
+                      <span>{Math.round(renderProgress)}%</span>
+                   </div>
+                  <div style={{height:3,background:'var(--border2)',borderRadius:2,overflow:'hidden'}}>
+              <div style={{height:'100%',background:'var(--cyan)',borderRadius:2,width:`${renderProgress}%`,transition:'width 1s linear'}}/>
+            </div>
+           </div>
+          )}
                     {!renderStatus&&(
                       <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>
                         Video saved to your account after export
