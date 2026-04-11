@@ -481,6 +481,9 @@ function App(){
   const [step,setStep]=useState(0);
   const [loading,setLoading]=useState(false);
   const [exportLoading,setExportLoading]=useState(false);
+  const [renderStatus,setRenderStatus]=useState(null);
+  const [renderUrl,setRenderUrl]=useState(null);
+  const [videoId,setVideoId]=useState(null);
   const [error,setError]=useState('');
   const [drag,setDrag]=useState(false);
   const [toast,setToast]=useState(null);
@@ -534,11 +537,10 @@ function App(){
 
   useEffect(()=>{
     // Check for upgrade success/cancel in URL
+    const params=new URLSearchParams(window.location.search);
     if(params.get('upgrade')==='success'){
-       showToast('🎉 Welcome to Pro! Your plan has been upgraded.','success');
-       window.history.replaceState({},'','/');
-    if(session) loadUsage(session.user.id);
-   }
+      showToast('🎉 Welcome to Pro! Your plan has been upgraded.','success');
+      window.history.replaceState({},'','/');
     }
     if(params.get('upgrade')==='cancelled'){
       showToast('Upgrade cancelled — you can upgrade anytime.','');
@@ -605,33 +607,42 @@ function App(){
   /* ── Export — usage increment happens here ── */
   async function handleExport(){
     if(!session)return;
-    setExportLoading(true);
+    setExportLoading(true);setRenderStatus(null);setRenderUrl(null);
     try{
-      // Increment usage server-side — this is the real gate
-      const res=await fetch('/api/usage',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({user_id:session.user.id})
+      const usageRes=await fetch('/api/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:session.user.id})});
+      const usageData=await usageRes.json();
+      if(usageRes.status===403){setUpgradeReason('limit');setShowUpgrade(true);setExportLoading(false);return;}
+      if(!usageRes.ok)throw new Error(usageData.error||'Failed to save usage');
+      setVideosUsed(usageData.count);
+      const {data:videoRecord,error:videoErr}=await supabase.from('videos').insert({
+        user_id:session.user.id,title:songTitle,artist,genre,mood,analysis,captions,
+        clip_style:clipStyle,cap_style:capStyle,template,export_format:fmt,
+        status:'rendering',watermarked:plan==='free',
+      }).select().single();
+      if(videoErr)throw new Error(videoErr.message);
+      setVideoId(videoRecord.id);
+      const renderRes=await fetch('/api/render',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({video_id:videoRecord.id,user_id:session.user.id,captions,clip_style:clipStyle,cap_style:capStyle,song_title:songTitle,artist})
       });
-      const data=await res.json();
-      if(res.status===403){
-        setUpgradeReason('limit');setShowUpgrade(true);setExportLoading(false);return;
-      }
-      if(!res.ok)throw new Error(data.error||'Failed to save usage');
-      setVideosUsed(data.count);
-      // TODO: Trigger real render — for now save to videos table as draft
-      await supabase.from('videos').insert({
-        user_id:session.user.id,
-        title:songTitle,artist,genre,mood,
-        analysis,captions,
-        clip_style:clipStyle,cap_style:capStyle,template,
-        export_format:fmt,
-        status:'draft',
-        watermarked:plan==='free',
-      });
-      showToast('Video saved! Real rendering coming soon.','success');
+      const renderData=await renderRes.json();
+      if(!renderRes.ok)throw new Error(renderData.error||'Render failed');
+      setRenderStatus('rendering');
+      showToast('Rendering your video... ~30 seconds','success');
+      const renderId=renderData.render_id;
+      let attempts=0;
+      const poll=setInterval(async()=>{
+        attempts++;
+        if(attempts>40){clearInterval(poll);setRenderStatus('failed');showToast('Render timed out','error');return;}
+        try{
+          const s=await fetch('/api/render-status?render_id='+renderId+'&video_id='+videoRecord.id);
+          const sd=await s.json();
+          if(sd.status==='succeeded'){clearInterval(poll);setRenderStatus('done');setRenderUrl(sd.url);showToast('Video ready! Click Download.','success');}
+          else if(sd.status==='failed'){clearInterval(poll);setRenderStatus('failed');showToast('Render failed — try again','error');}
+        }catch(e){console.error('Poll error:',e);}
+      },3000);
     }catch(e){
       showToast('Export failed: '+e.message,'error');
+      setRenderStatus('failed');
     }finally{
       setExportLoading(false);
     }
@@ -971,12 +982,25 @@ function App(){
                         <span style={{color:'var(--orange)',cursor:'pointer',fontWeight:500}} onClick={()=>openUpgrade('general')}>Upgrade for 1080p →</span>
                       </div>
                     )}
-                    <button className="export-big" onClick={handleExport} disabled={exportLoading}>
-                      {exportLoading?'Saving...':`⬇ Export ${fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video`}
-                    </button>
-                    <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>
-                      Video saved to your account · Real rendering coming soon
-                    </div>
+                    {renderStatus==='done'&&renderUrl?(
+                      <a href={renderUrl} download target="_blank" style={{display:'block',width:'100%',padding:14,background:'var(--green)',color:'#000',borderRadius:8,fontFamily:'Syne,sans-serif',fontSize:15,fontWeight:700,cursor:'pointer',textAlign:'center',textDecoration:'none',marginBottom:10}}>
+                        ⬇ Download Video
+                      </a>
+                    ):(
+                      <button className="export-big" onClick={handleExport} disabled={exportLoading||renderStatus==='rendering'}>
+                        {exportLoading?'Starting render...':renderStatus==='rendering'?'⏳ Rendering... (~30s)':renderStatus==='failed'?'↺ Try Again':`⬇ Export ${fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video`}
+                      </button>
+                    )}
+                    {renderStatus==='rendering'&&(
+                      <div style={{marginTop:10,fontSize:12,color:'var(--cyan)',fontFamily:'DM Mono,monospace',textAlign:'center'}}>
+                        🎬 Rendering your video... hang tight
+                      </div>
+                    )}
+                    {!renderStatus&&(
+                      <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>
+                        Video saved to your account after export
+                      </div>
+                    )}
                   </div>
                   <button className="btn btn-ghost" style={{marginTop:12,width:'100%'}} onClick={resetVideo}>← Back to Dashboard</button>
                 </div>
