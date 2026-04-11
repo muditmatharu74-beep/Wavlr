@@ -541,7 +541,10 @@ function App(){
     const params=new URLSearchParams(window.location.search);
     if(params.get('upgrade')==='success'){
       showToast('🎉 Welcome to Pro! Your plan has been upgraded.','success');
-      window.history.replaceState({},'','/');
+     window.history.replaceState({},'','/');
+    setTimeout(()=>{
+    if(session) loadUsage(session.user.id);
+     }, 2000);
     }
     if(params.get('upgrade')==='cancelled'){
       showToast('Upgrade cancelled — you can upgrade anytime.','');
