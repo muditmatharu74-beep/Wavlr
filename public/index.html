@@ -484,7 +484,6 @@ function App(){
   const [renderStatus,setRenderStatus]=useState(null);
   const [renderUrl,setRenderUrl]=useState(null);
   const [videoId,setVideoId]=useState(null);
-  const [renderProgress,setRenderProgress]=useState(0);
   const [error,setError]=useState('');
   const [drag,setDrag]=useState(false);
   const [toast,setToast]=useState(null);
@@ -503,6 +502,9 @@ function App(){
   const [progress,setProgress]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [fmt,setFmt]=useState('reels');
+  const [showMyVideos,setShowMyVideos]=useState(false);
+  const [myVideos,setMyVideos]=useState([]);
+  const [videosLoading,setVideosLoading]=useState(false);
 
   const limit=PLAN_LIMITS[plan]||2;
   const usagePct=Math.min((videosUsed/limit)*100,100);
@@ -541,10 +543,7 @@ function App(){
     const params=new URLSearchParams(window.location.search);
     if(params.get('upgrade')==='success'){
       showToast('🎉 Welcome to Pro! Your plan has been upgraded.','success');
-     window.history.replaceState({},'','/');
-    setTimeout(()=>{
-    if(session) loadUsage(session.user.id);
-     }, 2000);
+      window.history.replaceState({},'','/');
     }
     if(params.get('upgrade')==='cancelled'){
       showToast('Upgrade cancelled — you can upgrade anytime.','');
@@ -570,7 +569,16 @@ function App(){
     return()=>clearInterval(t);
   },[playing]);
 
-  async function signOut(){
+  async function loadMyVideos(uid){
+    setVideosLoading(true);
+    try{
+      const {data,error}=await supabase.from('videos').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(20);
+      if(!error)setMyVideos(data||[]);
+    }catch(e){console.error(e);}
+    finally{setVideosLoading(false);}
+  }
+
+    async function signOut(){
     await supabase.auth.signOut();
     setStep(0);setSongTitle('');setArtist('');setAnalysis(null);setCaptions([]);
     setPlan('free');setVideosUsed(0);setUsageLoaded(false);
@@ -634,16 +642,14 @@ function App(){
       showToast('Rendering your video... ~30 seconds','success');
       const renderId=renderData.render_id;
       let attempts=0;
-      setRenderProgress(0);
-      const progTimer=setInterval(()=>setRenderProgress(p=>p>=90?90:p+1.5),1000);
       const poll=setInterval(async()=>{
-      attempts++;
-      if(attempts>40){clearInterval(progTimer);clearInterval(poll);setRenderStatus('failed');showToast('Render timed out','error');return;}
+        attempts++;
+        if(attempts>40){clearInterval(poll);setRenderStatus('failed');showToast('Render timed out','error');return;}
         try{
           const s=await fetch('/api/render-status?render_id='+renderId+'&video_id='+videoRecord.id);
           const sd=await s.json();
-          if(sd.status==='succeeded'){clearInterval(poll);clearInterval(progTimer);setRenderProgress(100);setRenderStatus('done');setRenderUrl(sd.url);showToast('Video ready! Click Download.','success');}
-          else if(sd.status==='failed'){clearInterval(poll);clearInterval(progTimer);setRenderStatus('failed');showToast('Render failed — try again','error');}
+          if(sd.status==='succeeded'){clearInterval(poll);setRenderStatus('done');setRenderUrl(sd.url);showToast('Video ready! Click Download.','success');}
+          else if(sd.status==='failed'){clearInterval(poll);setRenderStatus('failed');showToast('Render failed — try again','error');}
         }catch(e){console.error('Poll error:',e);}
       },3000);
     }catch(e){
@@ -720,6 +726,7 @@ function App(){
         <div className="logo syne">Wav<span>lr</span></div>
         <div className="nav-right">
           <div className={`nav-badge mono ${plan}`}>{plan.toUpperCase()}</div>
+          <button className="upgrade-nav-btn" style={{background:'var(--card2)',border:'1px solid var(--border2)',color:'var(--muted2)'}} onClick={()=>{setShowMyVideos(true);loadMyVideos(session.user.id);}}>My Videos</button>
           {plan==='free'&&<button className="upgrade-nav-btn" onClick={()=>openUpgrade('general')}>Upgrade</button>}
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <div className="nav-avatar">{initials}</div>
@@ -731,6 +738,80 @@ function App(){
 
       <div className="main">
         <div className="content slide-in" key={step}>
+
+          {/* MY VIDEOS */}
+          {showMyVideos&&(
+            <div className="slide-in">
+              <div style={{display:'flex',alignItems:'center',gap:16,marginBottom:28}}>
+                <button className="btn btn-ghost" onClick={()=>setShowMyVideos(false)} style={{padding:'8px 16px'}}>← Back</button>
+                <div>
+                  <div className="page-title syne" style={{fontSize:28,marginBottom:2}}>My Videos</div>
+                  <div style={{fontSize:13,color:'var(--muted2)'}}>Your exported video projects</div>
+                </div>
+              </div>
+              {videosLoading?(
+                <div style={{textAlign:'center',padding:'48px 0'}}>
+                  <div className="spinner" style={{margin:'0 auto 16px'}}/>
+                  <div style={{fontSize:13,color:'var(--muted)'}}>Loading your videos...</div>
+                </div>
+              ):myVideos.length===0?(
+                <div style={{textAlign:'center',padding:'64px 0',background:'var(--card)',border:'1px solid var(--border)',borderRadius:14}}>
+                  <div style={{fontSize:40,marginBottom:16}}>🎬</div>
+                  <div style={{fontFamily:'Syne,sans-serif',fontSize:20,fontWeight:700,marginBottom:8}}>No videos yet</div>
+                  <div style={{fontSize:13,color:'var(--muted2)',marginBottom:24}}>Create your first video to see it here</div>
+                  <button className="btn btn-primary" onClick={()=>setShowMyVideos(false)}>+ Create Video</button>
+                </div>
+              ):(
+                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:16}}>
+                  {myVideos.map(v=>(
+                    <div key={v.id} style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden',cursor:'pointer',transition:'border-color .2s'}}
+                      onMouseEnter={e=>e.currentTarget.style.borderColor='var(--cyan)'}
+                      onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}
+                    >
+                      <div style={{height:120,background:'var(--surface)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,borderBottom:'1px solid var(--border)'}}>
+                        {v.clip_style==='gaming'?'🎮':v.clip_style==='anime'?'⛩':v.clip_style==='cinematic'?'🎬':'🌅'}
+                      </div>
+                      <div style={{padding:'14px 16px'}}>
+                        <div style={{fontFamily:'Syne,sans-serif',fontSize:15,fontWeight:700,marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{v.title||'Untitled'}</div>
+                        <div style={{fontSize:12,color:'var(--muted2)',marginBottom:10}}>{v.artist||'Unknown artist'} · {v.clip_style} · {v.cap_style}</div>
+                        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+                          <div style={{fontSize:10,fontFamily:'DM Mono,monospace',padding:'3px 8px',borderRadius:4,
+                            background:v.status==='rendered'?'#22d3a020':v.status==='rendering'?'#00e5ff15':'#ffffff08',
+                            color:v.status==='rendered'?'var(--green)':v.status==='rendering'?'var(--cyan)':'var(--muted)',
+                            border:'1px solid '+(v.status==='rendered'?'#22d3a030':v.status==='rendering'?'#00e5ff25':'var(--border)')
+                          }}>{v.status}</div>
+                          <div style={{display:'flex',gap:6}}>
+                            {v.render_url&&(
+                              <a href={v.render_url} download target="_blank" onClick={e=>e.stopPropagation()}
+                                style={{padding:'5px 10px',background:'var(--green)',color:'#000',borderRadius:6,fontSize:11,fontWeight:600,textDecoration:'none',fontFamily:'DM Mono,monospace'}}>
+                                ⬇ Download
+                              </a>
+                            )}
+                            <button style={{padding:'5px 10px',background:'var(--cyan)',color:'#000',border:'none',borderRadius:6,fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:'DM Mono,monospace'}}
+                              onClick={()=>{
+                                setSongTitle(v.title||'');setArtist(v.artist||'');setGenre(v.genre||'hip-hop');
+                                setMood(v.mood||'hype');setAnalysis(v.analysis||null);setCaptions(v.captions||[]);
+                                setClipStyle(v.clip_style||'gaming');setCapStyle(v.cap_style||'bold');
+                                setTemplate(v.template||'hype');setFmt(v.export_format||'reels');
+                                setRenderStatus(null);setRenderUrl(null);setRenderProgress(0);
+                                setShowMyVideos(false);setStep(v.analysis?3:1);
+                              }}>
+                              ✏ Re-edit
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{fontSize:10,color:'var(--muted)',fontFamily:'DM Mono,monospace',marginTop:8}}>
+                          {new Date(v.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!showMyVideos&&(<>
 
           {/* STEP 0 — DASHBOARD */}
           {step===0&&(
@@ -997,17 +1078,11 @@ function App(){
                         {exportLoading?'Starting render...':renderStatus==='rendering'?'⏳ Rendering... (~30s)':renderStatus==='failed'?'↺ Try Again':`⬇ Export ${fmt==='reels'?'Reels/TikTok':fmt==='square'?'Square':'YouTube'} Video`}
                       </button>
                     )}
-                   {renderStatus==='rendering'&&(
-                     <div style={{marginTop:10}}>
-                    <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace',marginBottom:6}}>
-                      <span>🎬 Rendering your video...</span>
-                      <span>{Math.round(renderProgress)}%</span>
-                   </div>
-                  <div style={{height:3,background:'var(--border2)',borderRadius:2,overflow:'hidden'}}>
-              <div style={{height:'100%',background:'var(--cyan)',borderRadius:2,width:`${renderProgress}%`,transition:'width 1s linear'}}/>
-            </div>
-           </div>
-          )}
+                    {renderStatus==='rendering'&&(
+                      <div style={{marginTop:10,fontSize:12,color:'var(--cyan)',fontFamily:'DM Mono,monospace',textAlign:'center'}}>
+                        🎬 Rendering your video... hang tight
+                      </div>
+                    )}
                     {!renderStatus&&(
                       <div style={{marginTop:10,fontSize:11,color:'var(--muted)',fontFamily:'DM Mono,monospace'}}>
                         Video saved to your account after export
@@ -1020,6 +1095,7 @@ function App(){
             </>
           )}
 
+          </>)}
         </div>
       </div>
     </div>
